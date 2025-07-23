@@ -1,0 +1,914 @@
+
+
+
+/* Hero Section and Carousel Styling */
+.hero {
+    position: relative;
+    height: 650px;
+    overflow: hidden;
+}
+
+.carousel {
+    height: 100%;
+}
+
+.carousel-inner {
+    height: 100%;
+}
+
+.carousel-item {
+    height: 100%;
+}
+
+.carousel-image-container {
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-image {
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.hero-content {
+    text-align: center;
+    color: white;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    color: #fff;
+}
+
+.hero-content p {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    color: #fff;
+}
+
+.btn-custom {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #333;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+}
+
+.btn-custom:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    z-index: 10;
+    opacity: 0.8;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+/* Responsive carousel adjustments */
+@media (max-width: 768px) {
+    .hero {
+        height: 450px;
+    }
+    
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-content p {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        height: 350px;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+    }
+    
+    .btn-custom {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* Card Standardization for All Pages */
+.destination-card,
+.attraction-card,
+.car-card,
+.agency-card,
+.accommodation-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 30px;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.destination-card:hover,
+.attraction-card:hover,
+.car-card:hover,
+.agency-card:hover,
+.accommodation-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card-image-container {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.destination-card:hover .card-image,
+.attraction-card:hover .card-image,
+.car-card:hover .card-image,
+.agency-card:hover .card-image,
+.accommodation-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.7) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.destination-card:hover .card-overlay,
+.attraction-card:hover .card-overlay,
+.car-card:hover .card-overlay,
+.agency-card:hover .card-overlay,
+.accommodation-card:hover .card-overlay {
+    opacity: 1;
+}
+
+.card-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    line-height: 1.3;
+}
+
+.card-description {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.card-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffc107;
+}
+
+.card-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.card-rating .stars {
+    color: #ffc107;
+}
+
+.card-rating .rating-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.card-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ffc107;
+    color: #333;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.btn-select {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #333;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-select:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #333;
+    transform: translateY(-1px);
+}
+
+.btn-select.selected {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+/* Info section styling */
+.info-section {
+    padding: 60px 0;
+}
+
+.info-box {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.info-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.info-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: #ffc107;
+    opacity: 0.8;
+}
+
+.info-box h3 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+    position: relative;
+    padding-bottom: 12px;
+}
+
+.info-box h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: #ffc107;
+}
+
+.info-box p, .info-box ul {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Service box styling */
+.service-box {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    height: 100%;
+}
+
+.service-box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.service-box::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, #ffc107, #ff9800);
+}
+
+.service-box .icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ffc107;
+    display: inline-block;
+    height: 80px;
+    width: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    background: #fff8e1;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+
+.service-box h4 {
+    font-size: 1.5rem;
+    margin: 15px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.service-box p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 0;
+}
+
+/* Section headings */
+.section-heading {
+    text-align: center;
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.section-heading h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+}
+
+.section-heading h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, #ffc107, #ff9800);
+    border-radius: 2px;
+}
+
+.section-heading p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 700px;
+    margin: 0 auto;
+    padding-top: 15px;
+}
+
+/* Standardized Card Styling for All Pages */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    height: 250px;
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 160px;
+    position: relative;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(to right, #ffc107, #ff9800);
+    border-radius: 2px;
+}
+
+.card-text {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+/* Selection Card Enhancements */
+.selection-card {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.selection-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.selection-card:hover::before {
+    opacity: 1;
+}
+
+.selection-card.selected {
+    border: 3px solid #ffc107;
+    box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+}
+
+.selection-card.selected::before {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+}
+
+/* Destination, Attraction, Car, and Agency specific cards */
+.destination-card,
+.attraction-card,
+.car-card,
+.agency-card {
+    margin-bottom: 30px;
+}
+
+/* Price display for cars */
+.card .price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffc107;
+    margin-top: 10px;
+}
+
+/* Badge for cards */
+.card .badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Card footer enhancements */
+.card-footer {
+    background: transparent;
+    border-top: 1px solid #eee;
+    padding: 15px 25px;
+}
+
+/* Responsive card adjustments */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 200px;
+    }
+    
+    .card-body {
+        padding: 20px;
+        min-height: 140px;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+    }
+    
+    .card-text {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-img-top {
+        height: 180px;
+    }
+    
+    .card-body {
+        padding: 15px;
+        min-height: 120px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+}
+
+/* Trip Summary Page Styling */
+.trip-summary {
+    background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.summary-section {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    color: #333;
+    font-weight: 600;
+    border-bottom: 3px solid #ffc107;
+    padding-bottom: 10px;
+    display: inline-block;
+    margin-bottom: 2rem;
+}
+
+.section-title i {
+    color: #ffc107;
+}
+
+.service-details p {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.service-details i {
+    color: #ffc107;
+    width: 16px;
+}
+
+.trip-total-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 2px solid #ffc107;
+    box-shadow: 0 10px 30px rgba(255, 193, 7, 0.2);
+}
+
+.cost-breakdown {
+    padding: 1rem;
+}
+
+.cost-breakdown .d-flex {
+    font-size: 1.1rem;
+}
+
+.cost-breakdown i {
+    color: #ffc107;
+    width: 20px;
+}
+
+.total-amount {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 1rem -1rem 0 -1rem;
+}
+
+.total-amount .h4 {
+    margin: 0;
+    color: white;
+}
+
+/* Enhanced card styling for trip summary */
+.trip-summary .card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.trip-summary .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.trip-summary .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.trip-summary .card-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    z-index: 2;
+    box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4);
+}
+
+.trip-summary .card-footer {
+    background: transparent;
+    border-top: 1px solid #eee;
+    padding: 15px 20px;
+}
+
+.trip-summary .price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffc107;
+}
+
+/* Action buttons enhancement */
+.trip-summary .btn {
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.trip-summary .btn-primary {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    border: none;
+    color: white;
+}
+
+.trip-summary .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+}
+
+.trip-summary .btn-secondary {
+    background: #6c757d;
+    border: none;
+    color: white;
+}
+
+.trip-summary .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments for trip summary */
+@media (max-width: 768px) {
+    .trip-summary .card-img-top {
+        height: 180px;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+    }
+    
+    .trip-summary .card-badge {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .summary-section {
+        margin-bottom: 2rem;
+    }
+    
+    .trip-summary .card-img-top {
+        height: 160px;
+    }
+    
+    .service-details p {
+        font-size: 0.85rem;
+    }
+    
+    .cost-breakdown .d-flex {
+        font-size: 1rem;
+    }
+}
+
+/* Navigation and Progress Tracking Styles */
+.navigation-section {
+    background: #f8f9fa;
+    border-top: 3px solid #ffc107;
+}
+
+.progress-info h6 {
+    color: #333;
+    font-weight: 600;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+.visit-duration .card {
+    border: 2px solid #ffc107;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+}
+
+.visit-duration .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.visit-duration .form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.duration-display {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Attractions section styling */
+.attractions-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.attractions-section .section-title {
+    color: #333;
+    border-bottom: 3px solid #ffc107;
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+/* Enhanced selection states */
+.selection-card.selected {
+    border: 3px solid #ffc107;
+    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+    transform: translateY(-2px);
+}
+
+.selection-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #28a745;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* Responsive navigation */
+@media (max-width: 768px) {
+    .navigation-section .btn {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .navigation-section .col-md-6:last-child {
+        text-align: center !important;
+        margin-top: 20px;
+    }
+    
+    .progress-info {
+        text-align: center;
+    }
+}
+
+/* Additional CSS imports for modular styling */
+@import url('general.css');
+@import url('header.css');
+@import url('buttons.css');
+@import url('datepicker.css');
+@import url('footer.css');
+@import url('responsive.css');
+@import url('cards.css');
+@import url('travel-agencies.css');
+@import url('trip-summary.css');
+@import url('user-profiles.css');
+@import url('form.css');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

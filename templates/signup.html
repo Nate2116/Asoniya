@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Create an Account</h2>
+            <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/api/signup/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, email, password})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = "{% url 'profile' %}"; // Redirect to profile on success
+            } else {
+                document.getElementById('error-message').textContent = data.error;
+                document.getElementById('error-message').style.display = 'block';
+            }
+        });
+    });
+    
+</script>
+{% endblock %}

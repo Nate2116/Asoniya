@@ -1,0 +1,11 @@
+/* Profile Section */
+.profile-section {
+    padding: 40px 0;
+}
+
+.list-group-item {
+    border: none;
+    background: #f8f9fa;
+    margin-bottom: 10px;
+    border-radius: 5px !important;
+}

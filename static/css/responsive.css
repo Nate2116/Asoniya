@@ -1,0 +1,28 @@
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 400px;
+    }
+
+    .hero-content {
+        padding: 60px 0;
+    }
+
+    .navbar-brand h1 {
+        font-size: 20px;
+    }
+
+    .card-img-top {
+        height: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .hero-content h1 {
+        font-size: 24px;
+    }
+}

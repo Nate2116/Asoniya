@@ -1,0 +1,32 @@
+
+.selection-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.selection-card.selected {
+    border: 2px solid #ffc107;
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.progress-container {
+    margin: 20px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.progress {
+    height: 10px;
+}
+
+.next-step-btn {
+    margin-top: 20px;
+    float: right;
+}
+
+.back-step-btn {
+    margin-top: 20px;
+    float: left;
+}

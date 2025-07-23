@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asoniya Platform - Attractions</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <!-- Include Header -->
+    {% include 'components/header.html' %}
+
+    <!-- Attraction Blocks -->
+    <section class="attractions py-5" id="attractions">
+        <div class="container">
+            <h2 class="text-center mb-4" id="attraction-title"></h2>
+            <div class="row" id="attraction-list"></div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="call-to-action text-center mt-5 mb-5">
+        <a href="{% url 'car_rentals' %}" class="btn btn-primary">Book Car Rental</a>
+    </section>
+
+    <!-- Include Footer -->
+    {% include 'components/footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const destination = urlParams.get('destination');
+
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            const attractions = {
+                'addis-ababa': [
+                    { name: 'Entoto', description: 'Enjoy the scenic views and hot springs of Entoto.', fee: '$10', image: 'https://via.placeholder.com/400x300.jpg?text=Entoto' },
+                    { name: 'Unity Park', description: 'Relax and enjoy the green spaces of Unity Park.', fee: 'Free', image: 'https://via.placeholder.com/400x300.jpg?text=Unity+Park' },
+                    { name: 'Adwa Museum', description: 'Learn about the Battle of Adwa and Ethiopian history.', fee: '$5', image: 'https://via.placeholder.com/400x300.jpg?text=Adwa+Museum' }
+                ],
+                'lalibela': [
+                    { name: 'Lalibela Churches', description: 'Visit the ancient rock-hewn churches of Lalibela.', fee: '$20', image: 'https://via.placeholder.com/400x300.jpg?text=Lalibela+Churches' },
+                    { name: 'Lalibela Museum', description: 'Discover the history and culture of Lalibela.', fee: '$15', image: 'https://via.placeholder.com/400x300.jpg?text=Lalibela+Museum' }
+                ],
+                'bishoftu': [
+                    { name: 'Hot Springs', description: 'Experience the relaxing hot springs of Bishoftu.', fee: '$8', image: 'https://via.placeholder.com/400x300.jpg?text=Bishoftu+Hot+Springs' },
+                    { name: 'Waterfalls', description: 'Enjoy the beautiful waterfalls of Bishoftu.', fee: '$12', image: 'https://via.placeholder.com/400x300.jpg?text=Bishoftu+Waterfalls' }
+                ]
+            };
+
+            if (destination) {
+                $('#attraction-title').text(`Attractions in ${capitalizeFirstLetter(destination.replace('-', ' '))}`);
+                const selectedAttractions = attractions[destination] || [];
+                selectedAttractions.forEach(function(attraction, index) {
+                    $('#attraction-list').append(`
+                        <div class="col-md-4 mb-4">
+                            <div class="card selection-card" data-id="attraction-${index+1}" onclick="toggleSelection('attractions', 'attraction-${index+1}', this)">
+                                <img src="${attraction.image}" class="card-img-top" alt="${attraction.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${attraction.name}</h5>
+                                    <p class="card-text">${attraction.description}</p>
+                                    <p class="card-fee"><strong>Entrance Fee:</strong> ${attraction.fee}</p>
+                                    <a href="#" class="btn btn-primary">More Info</a>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            } else {
+                $('#attraction-title').text('No Destination Selected');
+                $('#attraction-list').append('<div class="col-md-12"><p>Please select a destination from the Destinations page.</p></div>');
+            }
+        });
+
+        function toggleSelection(category, id, element) {
+          element.classList.toggle('selected');
+          // Add your selection logic here, e.g., updating a list of selected items
+          console.log(`Selection toggled for ${category} ${id}`);
+        }
+    </script>
+    <script>
+function addToTrip(itemId, itemType) {
+    fetch('/api/trip/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({item_id: itemId, item_type: itemType})
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message || data.error);
+    });
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/attractions/')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('attraction-list');
+            list.innerHTML = '';
+            data.forEach(attr => {
+                const card = `
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card attraction-card selection-card" onclick="addToTrip(${attr.id}, 'attraction')">
+                            <img src="${attr.image}" class="card-img-top" alt="${attr.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${attr.name}</h5>
+                                <p class="card-text">${attr.description}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                list.innerHTML += card;
+            });
+        });
+});
+</script>
+</body>
+</html>

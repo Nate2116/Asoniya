@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore popular destinations in Ethiopia with Asoniya Platform. Discover Addis Ababa, Lalibela, and Bishoftu with ease.">
+    <meta name="keywords" content="Ethiopia, travel, tourism, Addis Ababa, Lalibela, Bishoftu, destinations, attractions">
+    <title>Asoniya Platform - Destinations</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/datepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <section class="visit-duration py-5">
+        <div class="container">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2>Plan Your Ethiopian Adventure</h2>
+                    <p class="calendar-subtitle">Choose the perfect dates for your journey</p>
+                </div>
+                <div class="calendar-body">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="date-picker-wrapper">
+                                <div class="date-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <input type="text" class="form-control custom-datepicker" id="visit-duration" placeholder="Select your travel dates...">
+                            </div>
+                            <div class="calendar-help-text">
+                                <p><i class="fas fa-info-circle"></i> The best time to visit Ethiopia is between October and March (dry season)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="destinations py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Popular Destinations</h2>
+            <p class="text-center text-muted mb-5">Select destinations to explore their attractions</p>
+            <div class="row">
+                {% for dest in destinations %}
+                <div class="col-md-4 mb-4">
+                    <div class="card selection-card destination-card" data-destination="{{ dest.name|slugify }}" onclick="selectDestination({{ dest.id }}, this)">
+                        <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ dest.name }}</h5>
+                            <p class="card-text">{{ dest.description }}</p>
+                        </div>
+                        <div class="card-footer text-center bg-light">
+                            <small class="text-primary font-weight-bold">Click to explore attractions</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="attractions-section py-5 bg-light" id="attractions-section" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-map-marked-alt text-primary mr-2"></i>
+                        Attractions in <span id="selected-destination-name">Selected Destination</span>
+                    </h3>
+                    <p class="text-center text-muted mb-5">Select the attractions you'd like to visit</p>
+                </div>
+            </div>
+            <div class="row" id="attractions-container">
+            </div>
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-secondary mr-3" onclick="backToDestinations()">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Destinations
+                </button>
+                <a href="{% url 'accommodation' %}" class="btn btn-primary" id="select-attractions-btn">
+                    <i class="fas fa-check mr-2"></i>Continue
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% include 'components/footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+function selectAttraction(attractionId, element) {
+    fetch('/api/trip/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            item_type: 'attraction',
+            item_id: attractionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Attraction saved!');
+            element.classList.add('selected');
+        } else {
+            console.error('Failed to save attraction:', data.error);
+            alert('Could not save selection. Are you logged in?');
+        }
+    });
+}
+
+function loadAttractions(attractions) {
+    const container = document.getElementById('attractions-container');
+    container.innerHTML = '';
+    if (attractions.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center"><p>No attractions found for this destination.</p></div>';
+        return;
+    }
+    attractions.forEach(attraction => {
+        const attractionCard = `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card attraction-card selection-card" onclick="selectAttraction(${attraction.id}, this)">
+                    <img src="${attraction.image_url || '/static/images/placeholder.jpg'}" class="card-img-top" alt="${attraction.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${attraction.name}</h5>
+                        <p class="card-text">${attraction.description}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += attractionCard;
+    });
+}
+
+        // Initialize Flatpickr date picker
+        flatpickr("#visit-duration", {
+                mode: "range",
+                dateFormat: "M j, Y",
+                minDate: "today",
+        });
+    </script>
+</body>
+</html>

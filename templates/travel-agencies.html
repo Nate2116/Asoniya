@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asoniya Platform - Travel Agencies</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <!-- Include Header -->
+    {% include 'components/header.html' %}
+
+    <!-- Travel Agencies Section -->
+    <section class="travel-agencies py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Travel Agencies</h2>
+            <div class="row" id="item-list"></div>
+        </div>
+    </section>
+
+    <!-- Progress and Navigation -->
+    <section class="navigation-section py-4 bg-white border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="progress-info">
+                        <h6 class="mb-1">Trip Planning Progress</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">Step 3 of 4: Travel Agencies</small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href="{% url 'accommodation' %}" class="btn btn-outline-secondary mr-2">
+                        <i class="fas fa-arrow-left mr-1"></i>Back: Accommodation
+                    </a>
+                    <a href="{% url 'car_rentals' %}" class="btn btn-primary">
+                        Next: Car Rentals <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Include Footer -->
+    {% include 'components/footer.html' %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/selection.js' %}"></script>
+    <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+function selectTravelAgency(agencyId, element) {
+    fetch('/api/trip/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            item_type: 'travel_agency',
+            item_id: agencyId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            element.classList.add('selected');
+        } else {
+            alert('Could not save selection. Are you logged in?');
+        }
+    });
+}
+function fetchAndRenderTravelAgencies() {
+    fetch('/api/travel-agencies/')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('item-list');
+            list.innerHTML = '';
+            if (data.length === 0) {
+                list.innerHTML = '<div class="col-12 text-center"><p>No travel agencies found.</p></div>';
+                return;
+            }
+            data.forEach(agency => {
+                const imageUrl = agency.image_url ? agency.image_url : '{% static "images/placeholder.jpg" %}';
+                const card = `
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card travel-agency-card h-100" onclick="selectTravelAgency(${agency.id}, this)">
+                            <img src="${imageUrl}" class="card-img-top" alt="${agency.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${agency.name}</h5>
+                                <p class="card-text">${agency.description}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                list.innerHTML += card;
+            });
+        });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    fetchAndRenderTravelAgencies();
+});
+</script>
+</body>
+</html>

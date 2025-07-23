@@ -1,0 +1,686 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Privacy Policy - Asoniya</title>
+        <link
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="{% static 'css/styles.css' %}"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="{% static 'css/header.css' %}"
+        />
+        <link
+            rel="stylesheet"
+            href="{% static 'css/footer.css' %}"
+        />
+    </head>
+    <body>
+        <!-- Include Header -->
+        {% include 'components/header.html' %}
+
+        <!-- Page Header -->
+        <section class="page-header bg-light py-5">
+            <div class="container">
+                <div class="text-center">
+                    <h1 class="display-4 mb-3">Privacy Policy</h1>
+                    <p class="lead">
+                        Your privacy is important to us. Learn how we protect
+                        your information.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Privacy Content -->
+        <section class="privacy-content py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="privacy-text">
+                            <div class="alert alert-info">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                <strong>Last Updated:</strong> January 2025
+                            </div>
+
+                            <section id="overview" class="mb-5">
+                                <h3>1. Overview</h3>
+                                <p>
+                                    Asoniya ("we," "our," or "us") is committed
+                                    to protecting your privacy. This Privacy
+                                    Policy explains how we collect, use,
+                                    disclose, and safeguard your information
+                                    when you use our travel platform and
+                                    services.
+                                </p>
+                                <p>
+                                    This policy applies to all users of our
+                                    platform, including visitors browsing
+                                    destinations, registered users creating trip
+                                    plans, and customers making bookings for
+                                    accommodations, car rentals, and travel
+                                    agency services in Ethiopia.
+                                </p>
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    <strong>Key Commitment:</strong> We never
+                                    sell your personal information to third
+                                    parties for marketing purposes.
+                                </div>
+                            </section>
+
+                            <section id="information-collected" class="mb-5">
+                                <h3>2. Information We Collect</h3>
+
+                                <h5>2.1 Information You Provide Directly</h5>
+                                <ul>
+                                    <li>
+                                        <strong>Account Information:</strong>
+                                        Name, email address, phone number,
+                                        password
+                                    </li>
+                                    <li>
+                                        <strong>Profile Information:</strong>
+                                        Travel preferences, accommodation
+                                        preferences, dietary restrictions
+                                    </li>
+                                    <li>
+                                        <strong>Booking Information:</strong>
+                                        Travel dates, destination selections,
+                                        number of travelers, special
+                                        requirements
+                                    </li>
+                                    <li>
+                                        <strong>Payment Information:</strong>
+                                        Credit card details, billing address
+                                        (processed securely by payment
+                                        providers)
+                                    </li>
+                                    <li>
+                                        <strong>Communication Data:</strong>
+                                        Messages sent through our platform,
+                                        customer service interactions
+                                    </li>
+                                    <li>
+                                        <strong>Reviews and Ratings:</strong>
+                                        Feedback about destinations,
+                                        accommodations, and travel agencies
+                                    </li>
+                                </ul>
+
+                                <h5>2.2 Information Collected Automatically</h5>
+                                <ul>
+                                    <li>
+                                        <strong>Usage Data:</strong> Pages
+                                        visited, time spent on platform, search
+                                        queries, destination preferences
+                                    </li>
+                                    <li>
+                                        <strong>Device Information:</strong> IP
+                                        address, browser type, operating system,
+                                        device identifiers
+                                    </li>
+                                    <li>
+                                        <strong>Location Data:</strong> General
+                                        location based on IP address (not
+                                        precise GPS location)
+                                    </li>
+                                    <li>
+                                        <strong>Calendar Interactions:</strong>
+                                        Date selections, trip duration
+                                        preferences
+                                    </li>
+                                    <li>
+                                        <strong>Selection Patterns:</strong>
+                                        Destinations, attractions, and
+                                        accommodations you view or select
+                                    </li>
+                                </ul>
+
+                                <h5>2.3 Information from Third Parties</h5>
+                                <ul>
+                                    <li>
+                                        <strong>Travel Agency Partners:</strong>
+                                        Booking confirmations, service updates,
+                                        itinerary changes
+                                    </li>
+                                    <li>
+                                        <strong
+                                            >Accommodation Providers:</strong
+                                        >
+                                        Reservation details, check-in/check-out
+                                        information
+                                    </li>
+                                    <li>
+                                        <strong>Payment Processors:</strong>
+                                        Transaction confirmations, payment
+                                        status
+                                    </li>
+                                    <li>
+                                        <strong>Social Media:</strong>
+                                        Information if you choose to connect
+                                        social media accounts
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <section id="how-we-use" class="mb-5">
+                                <h3>3. How We Use Your Information</h3>
+
+                                <h5>3.1 Service Provision</h5>
+                                <ul>
+                                    <li>
+                                        Process bookings for accommodations, car
+                                        rentals, and travel services
+                                    </li>
+                                    <li>
+                                        Facilitate connections with travel
+                                        agencies and tour operators
+                                    </li>
+                                    <li>
+                                        Provide trip planning tools and
+                                        destination recommendations
+                                    </li>
+                                    <li>
+                                        Send booking confirmations and travel
+                                        updates
+                                    </li>
+                                    <li>
+                                        Calculate trip costs and process
+                                        payments
+                                    </li>
+                                </ul>
+
+                                <h5>3.2 Platform Improvement</h5>
+                                <ul>
+                                    <li>
+                                        Analyze user behavior to improve website
+                                        functionality
+                                    </li>
+                                    <li>
+                                        Enhance destination and attraction
+                                        recommendations
+                                    </li>
+                                    <li>
+                                        Optimize search and filtering
+                                        capabilities
+                                    </li>
+                                    <li>
+                                        Develop new features based on user
+                                        preferences
+                                    </li>
+                                    <li>
+                                        Improve mobile responsiveness and user
+                                        experience
+                                    </li>
+                                </ul>
+
+                                <h5>3.3 Communication</h5>
+                                <ul>
+                                    <li>
+                                        Send important service announcements and
+                                        updates
+                                    </li>
+                                    <li>
+                                        Provide customer support and respond to
+                                        inquiries
+                                    </li>
+                                    <li>
+                                        Share travel tips and destination
+                                        information (with consent)
+                                    </li>
+                                    <li>
+                                        Send promotional offers for Ethiopian
+                                        travel experiences (opt-in only)
+                                    </li>
+                                    <li>
+                                        Notify about changes to bookings or
+                                        travel conditions
+                                    </li>
+                                </ul>
+
+                                <h5>3.4 Security and Legal Compliance</h5>
+                                <ul>
+                                    <li>
+                                        Detect and prevent fraudulent activities
+                                    </li>
+                                    <li>
+                                        Ensure platform security and user safety
+                                    </li>
+                                    <li>
+                                        Comply with legal obligations and
+                                        regulatory requirements
+                                    </li>
+                                    <li>
+                                        Resolve disputes and enforce our terms
+                                        of service
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <section id="information-sharing" class="mb-5">
+                                <h3>4. Information Sharing and Disclosure</h3>
+
+                                <h5>4.1 Service Providers and Partners</h5>
+                                <p>We share necessary information with:</p>
+                                <ul>
+                                    <li>
+                                        <strong
+                                            >Hotels and Accommodations:</strong
+                                        >
+                                        Guest details for reservations and
+                                        check-in
+                                    </li>
+                                    <li>
+                                        <strong>Travel Agencies:</strong>
+                                        Contact information and travel
+                                        preferences for trip planning
+                                    </li>
+                                    <li>
+                                        <strong>Car Rental Companies:</strong>
+                                        Driver information and rental details
+                                    </li>
+                                    <li>
+                                        <strong>Payment Processors:</strong>
+                                        Financial information for secure
+                                        transaction processing
+                                    </li>
+                                    <li>
+                                        <strong>Tour Operators:</strong>
+                                        Participant information for guided tours
+                                        and attractions
+                                    </li>
+                                </ul>
+
+                                <h5>4.2 Business Transfers</h5>
+                                <p>
+                                    In the event of a merger, acquisition, or
+                                    sale of assets, user information may be
+                                    transferred as part of the business
+                                    transaction. Users will be notified of any
+                                    such changes.
+                                </p>
+
+                                <h5>4.3 Legal Requirements</h5>
+                                <p>
+                                    We may disclose information when required by
+                                    law, court order, or to:
+                                </p>
+                                <ul>
+                                    <li>
+                                        Comply with legal processes and
+                                        government requests
+                                    </li>
+                                    <li>
+                                        Protect the rights and safety of
+                                        Asoniya, users, and the public
+                                    </li>
+                                    <li>
+                                        Investigate potential violations of our
+                                        terms of service
+                                    </li>
+                                    <li>
+                                        Respond to claims of illegal activity or
+                                        infringement
+                                    </li>
+                                </ul>
+
+                                <h5>4.4 Aggregated and Anonymous Data</h5>
+                                <p>
+                                    We may share aggregated, non-personally
+                                    identifiable information about travel
+                                    trends, popular destinations, and platform
+                                    usage statistics for research and marketing
+                                    purposes.
+                                </p>
+                            </section>
+
+                            <section id="data-security" class="mb-5">
+                                <h3>5. Data Security</h3>
+                                <p>
+                                    We implement comprehensive security measures
+                                    to protect your information:
+                                </p>
+
+                                <h5>5.1 Technical Safeguards</h5>
+                                <ul>
+                                    <li>
+                                        <strong>Encryption:</strong> All
+                                        sensitive data is encrypted in transit
+                                        and at rest
+                                    </li>
+                                    <li>
+                                        <strong>Secure Servers:</strong> Data
+                                        stored on secure servers with restricted
+                                        access
+                                    </li>
+                                    <li>
+                                        <strong>Firewalls:</strong> Network
+                                        security measures to prevent
+                                        unauthorized access
+                                    </li>
+                                    <li>
+                                        <strong>Regular Updates:</strong>
+                                        Security patches and system updates
+                                        applied promptly
+                                    </li>
+                                    <li>
+                                        <strong>Access Controls:</strong>
+                                        Limited access to personal data on a
+                                        need-to-know basis
+                                    </li>
+                                </ul>
+
+                                <h5>5.2 Payment Security</h5>
+                                <ul>
+                                    <li>
+                                        PCI DSS compliant payment processing
+                                    </li>
+                                    <li>
+                                        No storage of complete credit card
+                                        numbers on our servers
+                                    </li>
+                                    <li>
+                                        Secure payment gateways for all
+                                        transactions
+                                    </li>
+                                    <li>
+                                        Fraud detection and prevention systems
+                                    </li>
+                                </ul>
+
+                                <h5>5.3 Employee Training</h5>
+                                <p>
+                                    All employees receive regular training on
+                                    data protection, privacy practices, and
+                                    security protocols.
+                                </p>
+                            </section>
+
+                            <section id="cookies" class="mb-5">
+                                <h3>6. Cookies and Tracking Technologies</h3>
+
+                                <h5>6.1 Types of Cookies We Use</h5>
+                                <ul>
+                                    <li>
+                                        <strong>Essential Cookies:</strong>
+                                        Required for platform functionality and
+                                        user authentication
+                                    </li>
+                                    <li>
+                                        <strong>Performance Cookies:</strong>
+                                        Help us understand how users interact
+                                        with our platform
+                                    </li>
+                                    <li>
+                                        <strong>Functional Cookies:</strong>
+                                        Remember user preferences and selections
+                                    </li>
+                                    <li>
+                                        <strong>Marketing Cookies:</strong> Used
+                                        to deliver relevant advertisements (with
+                                        consent)
+                                    </li>
+                                </ul>
+
+                                <h5>6.2 Managing Cookies</h5>
+                                <p>
+                                    You can control cookie settings through your
+                                    browser preferences. Note that disabling
+                                    certain cookies may affect platform
+                                    functionality, such as:
+                                </p>
+                                <ul>
+                                    <li>
+                                        Saving destination and date selections
+                                    </li>
+                                    <li>Maintaining user login sessions</li>
+                                    <li>
+                                        Remembering language and display
+                                        preferences
+                                    </li>
+                                    <li>
+                                        Providing personalized recommendations
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <section id="user-rights" class="mb-5">
+                                <h3>7. Your Privacy Rights</h3>
+
+                                <h5>7.1 Access and Portability</h5>
+                                <ul>
+                                    <li>
+                                        Request access to your personal
+                                        information
+                                    </li>
+                                    <li>
+                                        Download your data in a portable format
+                                    </li>
+                                    <li>
+                                        View your booking history and travel
+                                        preferences
+                                    </li>
+                                </ul>
+
+                                <h5>7.2 Correction and Updates</h5>
+                                <ul>
+                                    <li>
+                                        Update your profile information through
+                                        your account settings
+                                    </li>
+                                    <li>
+                                        Correct inaccurate personal information
+                                    </li>
+                                    <li>
+                                        Modify travel preferences and contact
+                                        details
+                                    </li>
+                                </ul>
+
+                                <h5>7.3 Deletion and Restriction</h5>
+                                <ul>
+                                    <li>
+                                        Request deletion of your account and
+                                        associated data
+                                    </li>
+                                    <li>
+                                        Restrict processing of your information
+                                        for specific purposes
+                                    </li>
+                                    <li>
+                                        Withdraw consent for marketing
+                                        communications
+                                    </li>
+                                </ul>
+
+                                <h5>7.4 Communication Preferences</h5>
+                                <ul>
+                                    <li>
+                                        Opt out of promotional emails and
+                                        newsletters
+                                    </li>
+                                    <li>
+                                        Choose which types of notifications to
+                                        receive
+                                    </li>
+                                    <li>
+                                        Unsubscribe from marketing
+                                        communications at any time
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <section id="data-retention" class="mb-5">
+                                <h3>8. Data Retention</h3>
+                                <p>
+                                    We retain your information for as long as
+                                    necessary to provide services and comply
+                                    with legal obligations:
+                                </p>
+                                <ul>
+                                    <li>
+                                        <strong>Account Information:</strong>
+                                        Retained while your account is active
+                                        plus 3 years after closure
+                                    </li>
+                                    <li>
+                                        <strong>Booking Records:</strong> Kept
+                                        for 7 years for tax and legal compliance
+                                    </li>
+                                    <li>
+                                        <strong>Payment Information:</strong>
+                                        Processed and deleted according to
+                                        payment provider policies
+                                    </li>
+                                    <li>
+                                        <strong>Communication Logs:</strong>
+                                        Retained for 2 years for customer
+                                        service purposes
+                                    </li>
+                                    <li>
+                                        <strong>Usage Analytics:</strong>
+                                        Aggregated data may be retained
+                                        indefinitely
+                                    </li>
+                                </ul>
+                            </section>
+
+                            <section id="international-transfers" class="mb-5">
+                                <h3>9. International Data Transfers</h3>
+                                <p>
+                                    As a platform focused on Ethiopian tourism,
+                                    most data processing occurs within Ethiopia.
+                                    However, some services may involve
+                                    international transfers:
+                                </p>
+                                <ul>
+                                    <li>
+                                        Cloud storage providers with global
+                                        infrastructure
+                                    </li>
+                                    <li>
+                                        International payment processing systems
+                                    </li>
+                                    <li>
+                                        Customer support and communication tools
+                                    </li>
+                                </ul>
+                                <p>
+                                    All international transfers are conducted
+                                    with appropriate safeguards and comply with
+                                    applicable data protection laws.
+                                </p>
+                            </section>
+
+                            <section id="children-privacy" class="mb-5">
+                                <h3>10. Children's Privacy</h3>
+                                <p>
+                                    Our services are not intended for children
+                                    under 13 years of age. We do not knowingly
+                                    collect personal information from children
+                                    under 13. If we become aware that a child
+                                    under 13 has provided personal information,
+                                    we will take steps to delete such
+                                    information.
+                                </p>
+                                <p>
+                                    For travelers under 18, parental or guardian
+                                    consent is required for bookings and account
+                                    creation.
+                                </p>
+                            </section>
+
+                            <section id="policy-changes" class="mb-5">
+                                <h3>11. Changes to This Privacy Policy</h3>
+                                <p>
+                                    We may update this Privacy Policy
+                                    periodically to reflect changes in our
+                                    practices or legal requirements. We will:
+                                </p>
+                                <ul>
+                                    <li>
+                                        Post the updated policy on our website
+                                    </li>
+                                    <li>Update the "Last Updated" date</li>
+                                    <li>
+                                        Notify users via email for significant
+                                        changes
+                                    </li>
+                                    <li>
+                                        Provide a prominent notice on our
+                                        platform when appropriate
+                                    </li>
+                                </ul>
+                                <p>
+                                    Continued use of our services after changes
+                                    constitutes acceptance of the updated
+                                    policy.
+                                </p>
+                            </section>
+
+                            <section id="contact-privacy" class="mb-5">
+                                <h3>12. Contact Us About Privacy</h3>
+                                <p>
+                                    If you have questions about this Privacy
+                                    Policy or wish to exercise your privacy
+                                    rights, please contact us:
+                                </p>
+                                <div class="contact-info">
+                                    <p>
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        <strong>Privacy Officer:</strong>
+                                        privacy@asoniya.com
+                                    </p>
+                                    <p>
+                                        <i
+                                            class="fas fa-map-marker-alt mr-2"
+                                        ></i>
+                                        <strong>Address:</strong> Data
+                                        Protection Office<br />
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        Asoniya Travel Platform<br />
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        Addis Ababa, Ethiopia
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>Response Time:</strong> We
+                                        respond to privacy requests within 30
+                                        days
+                                    </p>
+                                </div>
+                            </section>
+
+                            <div class="alert alert-primary mt-4">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Questions or Concerns?</strong> We're
+                                committed to transparency and protecting your
+                                privacy. Don't hesitate to reach out if you need
+                                clarification on any aspect of this policy.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Include Footer -->
+        {% include 'components/footer.html' %}
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+</html>

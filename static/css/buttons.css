@@ -1,0 +1,15 @@
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-weight: 600;
+    padding: 10px 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #e6c200;
+    border-color: #e6c200;
+    transform: translateY(-2px);
+}

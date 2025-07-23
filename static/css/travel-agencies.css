@@ -1,0 +1,13 @@
+/* Travel Agency Cards */
+.agency-card {
+    height: 100%;
+}
+
+.agency-card .card-body {
+    padding: 20px;
+}
+
+.agency-rating {
+    color: #ffd700;
+    margin-bottom: 10px;
+}

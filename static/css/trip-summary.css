@@ -1,0 +1,13 @@
+/* Trip Summary Styles */
+.trip-summary .card-header {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.destination-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}

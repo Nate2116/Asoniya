@@ -1,0 +1,17 @@
+/* General Styles */
+body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Custom Colors */
+:root {
+    --primary-color: #f5bf61;
+    --secondary-color: #333;
+    --accent-color: #fff9db;
+}
+
+.bg-dark-yellow {
+    background-color: var(--primary-color);
+}
