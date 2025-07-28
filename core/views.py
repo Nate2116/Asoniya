@@ -134,15 +134,15 @@ def get_trip_summary_api(request):
 def profile_api(request):
     user = request.user
     if request.method == 'GET':
-        data = {'username': user.username, 'email': user.email, 'first_name': user.first_name, 'last_name': user.last_name}
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name, # Ensures first name is included
+            'last_name': user.last_name,   # Ensures last name is included
+        }
         return JsonResponse(data)
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        user.first_name = data.get('first_name', user.first_name)
-        user.last_name = data.get('last_name', user.last_name)
-        user.email = data.get('email', user.email)
-        user.save()
-        return JsonResponse({'status': 'success', 'message': 'Profile updated.'})
+    # The POST logic can remain the same if you add an edit feature later
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 # You will also need signup and login views if they are not already in another file
 @csrf_exempt

@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/login/', views.login_api, name='login-api'),
     path('api/logout/', views.logout_api, name='logout-api'),
     path('api/trip/add/', views.add_to_trip_api, name='add-to-trip-api'),
+    path('api/profile/', views.profile_api, name='profile-api'),
     path('api/trip/summary/', views.get_trip_summary_api, name='get-trip-summary-api'),
 ]
 
