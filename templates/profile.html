@@ -61,64 +61,6 @@
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const csrftoken = getCookie('csrftoken'); // Assuming getCookie is available from base.html or header
-
-        // Fetch and display user's personal information
-        fetch('/api/profile/', {
-            headers: { 'X-CSRFToken': csrftoken }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Not logged in');
-            return response.json();
-        })
-        .then(data => {
-            const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
-            document.getElementById('user-fullname').textContent = fullName;
-            document.getElementById('user-email').textContent = data.email;
-        })
-        .catch(error => {
-            const infoContent = document.getElementById('personal-info-content');
-            infoContent.innerHTML = `<p class="text-muted">Please <a href="{% url 'login' %}">log in</a> to view your profile.</p>`;
-        });
-        
-        // Fetch and display saved trips
-        fetch('/api/trip/summary/', {
-            headers: { 'X-CSRFToken': csrftoken }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('No trips found');
-            return response.json();
-        })
-        .then(data => {
-            const tripsList = document.getElementById('saved-trips-list');
-            tripsList.innerHTML = ''; // Clear the "Loading..." message
-
-            // We will display attractions as a proxy for a trip
-            if (data.attractions && data.attractions.length > 0) {
-                const tripName = `My Trip with ${data.attractions.length} attraction(s)`;
-                const tripDetails = data.attractions.map(attr => attr.name).join(', ');
-
-                const tripItem = `
-                    <a href="{% url 'trip_summary' %}" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">${tripName}</h5>
-                            <small>View Details</small>
-                        </div>
-                        <p class="mb-1">Featuring: ${tripDetails}</p>
-                    </a>`;
-                tripsList.innerHTML = tripItem;
-            } else {
-                tripsList.innerHTML = '<p class="text-muted">You have no saved trips. Start planning one from the <a href="{% url 'destinations' %}">destinations page</a>!</p>';
-            }
-        })
-        .catch(error => {
-            const tripsList = document.getElementById('saved-trips-list');
-            tripsList.innerHTML = '<p class="text-muted">Could not load saved trips. Please try again later.</p>';
-        });
-    });
-
-    // CSRF Token helper function
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -133,5 +75,55 @@
         }
         return cookieValue;
     }
+    const csrftoken = getCookie('csrftoken');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch personal info
+        fetch('/api/profile/')
+            .then(response => {
+                if (!response.ok) throw new Error('Not logged in');
+                return response.json();
+            })
+            .then(data => {
+                const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
+                document.getElementById('user-fullname').textContent = fullName;
+                document.getElementById('user-email').textContent = data.email;
+            })
+            .catch(error => {
+                const infoContent = document.getElementById('personal-info-content');
+                infoContent.innerHTML = `<p class="text-muted">Please <a href="{% url 'login' %}">log in</a> to view your profile.</p>`;
+            });
+
+        // Fetch saved trips
+        fetch('/api/trips/saved/')
+            .then(response => {
+                if (!response.ok) throw new Error('Could not load trips.');
+                return response.json();
+            })
+            .then(data => {
+                const tripsList = document.getElementById('saved-trips-list');
+                tripsList.innerHTML = ''; 
+
+                if (data && data.length > 0) {
+                    data.forEach(trip => {
+                        const tripItemHTML = `
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">${trip.name}</h5>
+                                    <small>${trip.item_count} items</small>
+                                </div>
+                                <p class="mb-1">Click to view this trip summary.</p>
+                            </a>`;
+                        tripsList.innerHTML += tripItemHTML;
+                    });
+                } else {
+                    tripsList.innerHTML = '<p class="text-muted">You have no saved trips. Start planning one from the <a href="{% url 'destinations\' %}">destinations page</a>!</p>';
+                }
+            })
+            .catch(error => {
+                const tripsList = document.getElementById('saved-trips-list');
+                tripsList.innerHTML = '<p class="text-muted">Could not load saved trips. Please log in and try again.</p>';
+            });
+    });
 </script>
 {% endblock %}

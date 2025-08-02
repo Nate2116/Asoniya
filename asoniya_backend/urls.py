@@ -28,6 +28,9 @@ urlpatterns = [
     path('api/login/', views.login_api, name='login-api'),
     path('api/logout/', views.logout_api, name='logout-api'),
     path('api/trip/add/', views.add_to_trip_api, name='add-to-trip-api'),
+    path('api/trip/dates/', views.update_trip_dates_api, name='update-trip-dates-api'),
+    path('api/trip/save/', views.save_trip_api, name='save-trip-api'),
+    path('api/trips/saved/', views.list_saved_trips_api, name='list-saved-trips-api'),
     path('api/profile/', views.profile_api, name='profile-api'),
     path('api/trip/summary/', views.get_trip_summary_api, name='get-trip-summary-api'),
 ]

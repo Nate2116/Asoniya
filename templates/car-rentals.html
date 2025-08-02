@@ -12,18 +12,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <!-- Include Header -->
     {% include 'components/header.html' %}
 
-    <!-- Car Rentals Blocks -->
     <section class="car-rentals py-5">
         <div class="container">
             <h2 class="text-center mb-4">Car Rentals</h2>
-            <div class="row" id="item-list"></div>
+            <div class="row" id="car-rentals-list">
+                <div class="col-12 text-center"><p>Loading car rentals...</p></div>
+            </div>
         </div>
     </section>
 
-    <!-- Progress and Navigation -->
     <section class="navigation-section py-4 bg-white border-top">
         <div class="container">
             <div class="row align-items-center">
@@ -48,100 +47,86 @@
         </div>
     </section>
 
-    <!-- Include Footer -->
     {% include 'components/footer.html' %}
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
     <script>
-        function toggleSelection(category, itemId, element) {
-            element.classList.toggle('selected');
-            // Add your selection logic here, e.g., updating a selection array or sending data to the server.
-            console.log(`Item ${itemId} in category ${category} selected: ${element.classList.contains('selected')}`);
-        }
-    </script>
-    <script>
-function addToTrip(itemId, itemType) {
-    fetch('/api/trip/add/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({item_id: itemId, item_type: itemType})
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message || data.error);
-    });
-}
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        // Helper function to get the CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-    }
-    return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+        const csrftoken = getCookie('csrftoken');
 
-function selectCarRental(carId, element) {
-    fetch('/api/trip/add/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
-        body: JSON.stringify({
-            item_type: 'car_rental',
-            item_id: carId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            element.classList.add('selected');
-        } else {
-            alert('Could not save selection. Are you logged in?');
-        }
-    });
-}
-document.addEventListener('DOMContentLoaded', function() {
-    function fetchAndRenderCarRentals() {
-        fetch('/api/car-rentals/')
+        // Universal function to save any item to the trip
+        function selectItem(itemId, itemType, element) {
+            fetch('/api/trip/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    item_type: itemType
+                })
+            })
             .then(response => response.json())
             .then(data => {
-                const list = document.getElementById('item-list');
-                list.innerHTML = '';
-                if (data.length === 0) {
-                    list.innerHTML = '<div class="col-12 text-center"><p>No car rentals found.</p></div>';
-                    return;
+                if (data.status === 'success') {
+                    // Toggle a 'selected' class for visual feedback
+                    element.classList.toggle('selected');
+                } else {
+                    alert('Could not save selection. Are you logged in?');
                 }
-                data.forEach(car => {
-                    const imageUrl = car.image_url ? car.image_url : '{% static "images/placeholder.jpg" %}';
-                    const card = `
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card car-rental-card h-100" onclick="selectCarRental(${car.id}, this)">
-                                <img src="${imageUrl}" class="card-img-top" alt="${car.name}">
-                                <div class="card-body">
-                                    <h5 class="card-title">${car.name}</h5>
-                                    <p class="card-text">${car.description}</p>
-                                </div>
-                            </div>
-                        </div>`;
-                    list.innerHTML += card;
-                });
             });
-    }
-    fetchAndRenderCarRentals();
-});
-</script>
+        }
+
+        // Fetch and render car rentals when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/car-rentals/')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('car-rentals-list');
+                    list.innerHTML = ''; // Clear the "Loading..." message
+                    
+                    if (data.length === 0) {
+                        list.innerHTML = '<div class="col-12 text-center"><p>No car rentals found.</p></div>';
+                        return;
+                    }
+                    
+                    data.forEach(car => {
+                        const imageUrl = car.image_url ? car.image_url : "{% static 'images/placeholder.jpg' %}";
+                        const card = `
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card selection-card h-100" onclick="selectItem(${car.id}, 'car_rental', this)">
+                                    <img src="${imageUrl}" class="card-img-top" alt="${car.name}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${car.name}</h5>
+                                        <p class="card-text">${car.description}</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <span class="price text-primary font-weight-bold">$${car.price}/day</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        list.innerHTML += card;
+                    });
+                });
+        });
+    </script>
 </body>
 </html>

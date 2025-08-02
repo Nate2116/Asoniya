@@ -50,12 +50,30 @@ class TravelAgency(models.Model):
     def __str__(self):
         return self.name
 
+from django.db import models
+from django.contrib.auth.models import User
+
 class Trip(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active Plan'),
+        ('saved', 'Saved Trip'),
+        ('booked', 'Booked Trip'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200, default="My Ethiopian Adventure")
+    name = models.CharField(max_length=200, default="New Trip Plan")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    
+    # Date fields for the trip duration
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    # All the selected items for the trip
     destinations = models.ManyToManyField(Destination, blank=True)
     accommodations = models.ManyToManyField(Accommodation, blank=True)
     car_rentals = models.ManyToManyField(CarRental, blank=True)
     travel_agencies = models.ManyToManyField(TravelAgency, blank=True)
-    def __str__(self): 
-        return f"Trip for {self.user.username}"
+    attractions = models.ManyToManyField(Attraction, blank=True)
+
+    def __str__(self):
+        return f"{self.name} for {self.user.username} ({self.status})"

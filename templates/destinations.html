@@ -99,74 +99,123 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        // Helper function to get the CSRF token for secure POST requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-    }
-    return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
-
-function selectAttraction(attractionId, element) {
-    fetch('/api/trip/add/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
-        body: JSON.stringify({
-            item_type: 'attraction',
-            item_id: attractionId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            console.log('Attraction saved!');
-            element.classList.add('selected');
-        } else {
-            console.error('Failed to save attraction:', data.error);
-            alert('Could not save selection. Are you logged in?');
+        const csrftoken = getCookie('csrftoken');
+    
+        // This function is called when a destination card is clicked
+        function selectDestination(destinationId, element) {
+            const container = document.getElementById('attractions-container');
+            container.innerHTML = '<div class="col-12 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i></div>';
+    
+            // Show the attractions section and scroll to it
+            document.getElementById('attractions-section').style.display = 'block';
+            document.getElementById('attractions-section').scrollIntoView({ behavior: 'smooth' });
+    
+            // Fetch attractions for the selected destination from our API
+            fetch(`/api/destinations/${destinationId}/attractions/`)
+                .then(response => response.json())
+                .then(attractions => {
+                    loadAttractions(attractions);
+                });
+            
+            // Update the header text
+            const destinationName = element.querySelector('.card-title').textContent;
+            document.getElementById('selected-destination-name').textContent = destinationName;
         }
-    });
-}
-
-function loadAttractions(attractions) {
-    const container = document.getElementById('attractions-container');
-    container.innerHTML = '';
-    if (attractions.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center"><p>No attractions found for this destination.</p></div>';
-        return;
-    }
-    attractions.forEach(attraction => {
-        const attractionCard = `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card attraction-card selection-card" onclick="selectAttraction(${attraction.id}, this)">
-                    <img src="${attraction.image_url || '/static/images/placeholder.jpg'}" class="card-img-top" alt="${attraction.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${attraction.name}</h5>
-                        <p class="card-text">${attraction.description}</p>
+    
+        // This function renders the attraction cards fetched from the API
+        function loadAttractions(attractions) {
+            const container = document.getElementById('attractions-container');
+            container.innerHTML = ''; // Clear loading spinner
+    
+            if (attractions.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center"><p>No attractions found for this destination.</p></div>';
+                return;
+            }
+    
+            attractions.forEach(attraction => {
+                const imageUrl = attraction.image_url ? attraction.image_url : "{% static 'images/placeholder.jpg' %}";
+                const attractionCard = `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card attraction-card selection-card" onclick="selectAttraction(${attraction.id}, this)">
+                            <img src="${imageUrl}" class="card-img-top" alt="${attraction.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${attraction.name}</h5>
+                                <p class="card-text">${attraction.description}</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML += attractionCard;
-    });
-}
-
-        // Initialize Flatpickr date picker
+                `;
+                container.innerHTML += attractionCard;
+            });
+        }
+    
+        // This function is called when an attraction card is clicked
+        function selectAttraction(attractionId, element) {
+            fetch('/api/trip/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    item_type: 'attraction',
+                    item_id: attractionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Toggle the 'selected' class for visual feedback
+                    element.classList.toggle('selected');
+                } else {
+                    alert(data.error || 'Could not save selection. Are you logged in?');
+                }
+            });
+        }
+    
+        function backToDestinations() {
+            document.getElementById('attractions-section').style.display = 'none';
+        }
+    
+        // Initialize the date picker
         flatpickr("#visit-duration", {
-                mode: "range",
-                dateFormat: "M j, Y",
-                minDate: "today",
+            mode: "range",
+            dateFormat: "M j, Y",
+            minDate: "today",
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const startDate = selectedDates[0].toISOString().split('T')[0];
+                    const endDate = selectedDates[1].toISOString().split('T')[0];
+
+                    // Call the API to save the dates
+                    fetch('/api/trip/dates/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken // Ensure csrftoken is defined
+                        },
+                        body: JSON.stringify({
+                            start_date: startDate,
+                            end_date: endDate
+                        })
+                    });
+                }
+            }
         });
     </script>
 </body>

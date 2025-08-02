@@ -42,6 +42,12 @@ def terms_conditions_page(request):
 def privacy_policy_page(request):
     return render(request, 'privacy-policy.html')
 
+def signup_page(request):
+    return render(request, 'signup.html')
+
+def login_page(request):
+    return render(request, 'login.html')
+
 # ===============================================
 # API VIEWS - For fetching data with JavaScript
 # ===============================================
@@ -79,72 +85,6 @@ def car_rental_list_api(request):
 # USER & TRIP API VIEWS
 # ===============================================
 
-@login_required
-def add_to_trip_api(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        item_id = data.get('item_id')
-        item_type = data.get('item_type')
-
-        if not item_id or not item_type:
-            return JsonResponse({'error': 'Missing item ID or type'}, status=400)
-
-        trip, created = Trip.objects.get_or_create(user=request.user)
-
-        try:
-            if item_type == 'attraction':
-                item = Attraction.objects.get(id=item_id)
-                trip.attractions.add(item)
-            elif item_type == 'accommodation':
-                item = Accommodation.objects.get(id=item_id)
-                trip.accommodations.add(item)
-            elif item_type == 'car_rental':
-                item = CarRental.objects.get(id=item_id)
-                trip.car_rentals.add(item)
-            elif item_type == 'travel_agency':
-                item = TravelAgency.objects.get(id=item_id)
-                trip.travel_agencies.add(item)
-            else:
-                return JsonResponse({'error': 'Invalid item type'}, status=400)
-            return JsonResponse({'status': 'success', 'message': f'{item_type} with id {item_id} added to trip.'})
-        except Exception as e:
-            return JsonResponse({'error': f'Could not find item. Details: {str(e)}'}, status=404)
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
-
-@login_required
-def get_trip_summary_api(request):
-    try:
-        trip = Trip.objects.get(user=request.user)
-        attractions = [{'name': attr.name, 'description': attr.description} for attr in trip.attractions.all()]
-        accommodations = [{'name': acc.name} for acc in trip.accommodations.all()]
-        car_rentals = [{'name': car.name} for car in trip.car_rentals.all()]
-        travel_agencies = [{'name': agency.name} for agency in trip.travel_agencies.all()]
-        data = {
-            'attractions': attractions,
-            'accommodations': accommodations,
-            'car_rentals': car_rentals,
-            'travel_agencies': travel_agencies,
-        }
-        return JsonResponse(data)
-    except Trip.DoesNotExist:
-        return JsonResponse({'error': 'No trip has been started.'}, status=404)
-
-@csrf_exempt
-@login_required
-def profile_api(request):
-    user = request.user
-    if request.method == 'GET':
-        data = {
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name, # Ensures first name is included
-            'last_name': user.last_name,   # Ensures last name is included
-        }
-        return JsonResponse(data)
-    # The POST logic can remain the same if you add an edit feature later
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
-
-# You will also need signup and login views if they are not already in another file
 @csrf_exempt
 def signup_api(request):
     if request.method == 'POST':
@@ -152,13 +92,15 @@ def signup_api(request):
         username = data.get('username')
         password = data.get('password')
         email = data.get('email')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
 
         if not username or not password:
             return JsonResponse({'error': 'Username and password are required.'}, status=400)
         if User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'Username already exists.'}, status=400)
 
-        user = User.objects.create_user(username=username, password=password, email=email)
+        user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
         login(request, user)
         return JsonResponse({'status': 'success', 'message': 'User created and logged in.'}, status=201)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
@@ -184,11 +126,116 @@ def logout_api(request):
         return JsonResponse({'status': 'success', 'message': 'Logout successful.'})
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
+@login_required
+def add_to_trip_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        item_id = data.get('item_id')
+        item_type = data.get('item_type')
 
-# --- New Page Rendering Views ---
+        if not item_id or not item_type:
+            return JsonResponse({'error': 'Missing item ID or type'}, status=400)
 
-def signup_page(request):
-    return render(request, 'signup.html')
+        trip, created = Trip.objects.get_or_create(user=request.user, status='active')
 
-def login_page(request):
-    return render(request, 'login.html')
+        try:
+            if item_type == 'attraction':
+                item = Attraction.objects.get(id=item_id)
+                trip.attractions.add(item)
+            elif item_type == 'accommodation':
+                item = Accommodation.objects.get(id=item_id)
+                trip.accommodations.add(item)
+            elif item_type == 'car_rental':
+                item = CarRental.objects.get(id=item_id)
+                trip.car_rentals.add(item)
+            elif item_type == 'travel_agency':
+                item = TravelAgency.objects.get(id=item_id)
+                trip.travel_agencies.add(item)
+            else:
+                return JsonResponse({'error': 'Invalid item type'}, status=400)
+            return JsonResponse({'status': 'success', 'message': f'{item_type} with id {item_id} added to trip.'})
+        except Exception as e:
+            return JsonResponse({'error': f'Could not find item. Details: {str(e)}'}, status=404)
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+@login_required
+def get_trip_summary_api(request):
+    try:
+        trip = Trip.objects.get(user=request.user, status='active')
+        
+        duration = None
+        if trip.start_date and trip.end_date:
+            delta = trip.end_date - trip.start_date
+            duration = delta.days + 1
+
+        attractions = [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else None} for attr in trip.attractions.all()]
+        accommodations = [{'name': acc.name, 'description': acc.description, 'price': str(acc.price_per_night), 'image_url': acc.image.url if acc.image else None} for acc in trip.accommodations.all()]
+        car_rentals = [{'name': car.name, 'description': car.description, 'price': str(car.price_per_day), 'image_url': car.image.url if car.image else None} for car in trip.car_rentals.all()]
+        travel_agencies = [{'name': agency.name, 'description': agency.description, 'image_url': agency.image.url if agency.image else None} for agency in trip.travel_agencies.all()]
+
+        data = {
+            'start_date': trip.start_date,
+            'end_date': trip.end_date,
+            'duration_days': duration,
+            'attractions': attractions,
+            'accommodations': accommodations,
+            'car_rentals': car_rentals,
+            'travel_agencies': travel_agencies,
+        }
+        return JsonResponse(data)
+    except Trip.DoesNotExist:
+        return JsonResponse({'error': 'No active trip has been started.'}, status=404)
+    
+@login_required
+def save_trip_api(request):
+    if request.method == 'POST':
+        try:
+            active_trip = Trip.objects.get(user=request.user, status='active')
+            first_attraction = active_trip.attractions.first()
+            if first_attraction:
+                active_trip.name = f"Trip including {first_attraction.name}"
+            else:
+                active_trip.name = "My Saved Trip"
+            active_trip.status = 'saved'
+            active_trip.save()
+            return JsonResponse({'status': 'success', 'message': 'Trip has been saved to your profile.'})
+        except Trip.DoesNotExist:
+            return JsonResponse({'error': 'No active trip to save.'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def update_trip_dates_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        trip, created = Trip.objects.get_or_create(user=request.user, status='active')
+        trip.start_date = start_date
+        trip.end_date = end_date
+        trip.save()
+        return JsonResponse({'status': 'success', 'message': 'Trip dates updated.'})
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def profile_api(request):
+    user = request.user
+    data = {
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+    }
+    return JsonResponse(data)
+
+@login_required
+def list_saved_trips_api(request):
+    saved_trips = Trip.objects.filter(user=request.user, status='saved')
+    data = []
+    for trip in saved_trips:
+        trip_data = {
+            'id': trip.id,
+            'name': trip.name,
+            'item_count': trip.attractions.count() + trip.accommodations.count() + trip.car_rentals.count()
+        }
+        data.append(trip_data)
+    return JsonResponse(data, safe=False)

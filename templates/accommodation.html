@@ -13,10 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <!-- Include Header -->
     {% include 'components/header.html' %}
 
-    <!-- Page Header -->
     <section class="page-header bg-light py-5">
         <div class="container">
             <div class="text-center">
@@ -26,65 +24,61 @@
         </div>
     </section>
 
-    <!-- Accommodation Filters -->
     <section class="filters py-4 bg-white border-bottom">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                <div class="col-md-10">
                     <div class="row">
                         <div class="col-md-3">
-                            <select class="form-control">
-                                <option>All Destinations</option>
-                                <option>Addis Ababa</option>
-                                <option>Lalibela</option>
-                                <option>Bishoftu</option>
+                            <select class="form-control" id="filter-destination">
+                                <option value="">All Destinations</option>
+                                {% for dest in destinations %}
+                                    <option value="{{ dest.id }}">{{ dest.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select class="form-control">
-                                <option>All Types</option>
-                                <option>Hotels</option>
-                                <option>Resorts</option>
-                                <option>Lodges</option>
+                            <select class="form-control" id="filter-type">
+                                <option value="">All Types</option>
+                                <option value="Hotel">Hotel</option>
+                                <option value="Resort">Resort</option>
+                                <option value="Lodge">Lodge</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select class="form-control">
-                                <option>Price Range</option>
-                                <option>Under $50</option>
-                                <option>$50 - $100</option>
-                                <option>$100 - $200</option>
-                                <option>Above $200</option>
+                            <select class="form-control" id="filter-price">
+                                <option value="">Price Range</option>
+                                <option value="50">Under $50</option>
+                                <option value="100">$50 - $100</option>
+                                <option value="200">$100 - $200</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select class="form-control">
-                                <option>Rating</option>
-                                <option>5 Stars</option>
-                                <option>4+ Stars</option>
-                                <option>3+ Stars</option>
+                            <select class="form-control" id="filter-rating">
+                                <option value="">Min Rating</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
                             </select>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 text-right">
-                    <button class="btn btn-primary">
-                        <i class="fas fa-filter mr-2"></i>Apply Filters
+                <div class="col-md-2 text-right">
+                    <button class="btn btn-primary" id="apply-filters-btn">
+                        <i class="fas fa-filter mr-2"></i>Apply
                     </button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Accommodation Listings -->
     <section class="accommodations py-5">
         <div class="container">
             <div class="row" id="accommodation-list">
-            </div>
+                </div>
         </div>
     </section>
 
-    <!-- Progress and Navigation -->
     <section class="navigation-section py-4 bg-white border-top">
         <div class="container">
             <div class="row align-items-center">
@@ -109,52 +103,56 @@
         </div>
     </section>
 
-    <!-- Include Footer -->
     {% include 'components/footer.html' %}
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/selection.js' %}"></script>
+    
     <script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        // Helper function to get the CSRF token needed for secure POST requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-    }
-    return cookieValue;
-}
-const csrftoken = getCookie('csrftoken');
+        const csrftoken = getCookie('csrftoken');
 
-function selectAccommodation(accId, element) {
-    fetch('/api/trip/add/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
-        body: JSON.stringify({
-            item_type: 'accommodation',
-            item_id: accId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            element.classList.add('selected');
-        } else {
-            alert('Could not save selection. Are you logged in?');
+        // Universal function to handle adding an item to the user's trip
+        function selectItem(itemId, itemType, element) {
+            fetch('/api/trip/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    item_type: itemType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Toggle a 'selected' class on the card for visual feedback
+                    element.classList.toggle('selected');
+                } else {
+                    // Show an error if the user is not logged in or something goes wrong
+                    alert(data.error || 'Could not save selection. Are you logged in?');
+                }
+            });
         }
-    });
-}
-        // This function fetches data from our API and renders the cards
+
+        // This function fetches accommodation data from our API and renders the cards
         function fetchAndRenderAccommodations(url = '/api/accommodations/') {
             fetch(url)
                 .then(response => response.json())
@@ -168,11 +166,10 @@ function selectAccommodation(accId, element) {
                     }
 
                     data.forEach(acc => {
-                        // Use the .image_url provided by the API
-                        const imageUrl = acc.image_url ? acc.image_url : '{% static "images/placeholder.jpg" %}'; // Fallback image
+                        const imageUrl = acc.image_url ? acc.image_url : "{% static 'images/placeholder.jpg' %}";
                         const card = `
                             <div class="col-lg-4 col-md-6 mb-4">
-                                <div class="card accommodation-card h-100" onclick="selectAccommodation(${acc.id}, this)">
+                                <div class="card accommodation-card h-100 selection-card" onclick="selectItem(${acc.id}, 'accommodation', this)">
                                     <div class="card-badge">${acc.rating}★</div>
                                     <img src="${imageUrl}" class="card-img-top" alt="${acc.name}">
                                     <div class="card-body">
@@ -189,26 +186,28 @@ function selectAccommodation(accId, element) {
                 });
         }
 
+        // This code runs when the page has finished loading
         document.addEventListener('DOMContentLoaded', function() {
-            // Initial load of all accommodations
+            // Load all accommodations by default when the page first loads
             fetchAndRenderAccommodations();
 
-            // Add an event listener for the filter button
+            // Add an event listener to the "Apply" button
             document.getElementById('apply-filters-btn').addEventListener('click', function() {
+                // Get the current values from all filter dropdowns
                 const destination = document.getElementById('filter-destination').value;
-                const type = document.getElementById('filter-type').value; // Ensure your type select has id="filter-type"
-                const maxPrice = document.getElementById('filter-price').value; // Ensure your price select has id="filter-price"
-                const minRating = document.getElementById('filter-rating').value; // Ensure your rating select has id="filter-rating"
+                const type = document.getElementById('filter-type').value;
+                const maxPrice = document.getElementById('filter-price').value;
+                const minRating = document.getElementById('filter-rating').value;
 
-                // Build the query string for the API call
+                // Build a query string for the API call based on the selected filters
                 const params = new URLSearchParams();
                 if (destination) params.append('destination', destination);
                 if (type) params.append('type', type);
                 if (maxPrice) params.append('max_price', maxPrice);
                 if (minRating) params.append('min_rating', minRating);
 
-                const queryString = params.toString();
-                fetchAndRenderAccommodations(`/api/accommodations/?${queryString}`);
+                // Fetch and render the filtered results
+                fetchAndRenderAccommodations(`/api/accommodations/?${params.toString()}`);
             });
         });
     </script>

@@ -1,123 +1,174 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asoniya Platform - Trip Summary</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/header.css' %}">
-    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body>
-    {% include 'components/header.html' %}
 
-    <section class="trip-summary py-5">
-        <div class="container">
-            <h2 class="text-center mb-4">Your Trip Summary</h2>
+{% block content %}
+<section class="trip-summary py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Your Trip Summary</h2>
 
-            <div class="summary-section mb-4">
-                <h3 class="section-title mb-4">
-                    <i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions
-                </h3>
-                <div id="attractions-summary-list" class="list-group">
-                    <p>Loading attractions...</p>
-                </div>
+        <div class="summary-section mb-4 text-center">
+            <div id="trip-dates-summary" class="alert alert-info" style="display: none;">
+                <h4 class="alert-heading">Trip Duration</h4>
+                <p class="lead mb-0">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    <span id="date-range-display"></span> 
+                    (<strong id="duration-display"></strong> days)
+                </p>
             </div>
-
-            <div class="summary-section mb-4">
-                <h3 class="section-title mb-4">
-                    <i class="fas fa-concierge-bell mr-2"></i>Selected Services
-                </h3>
-                <div class="row">
-                    <div class="col-md-4">
-                        <h4><i class="fas fa-bed mr-2"></i>Accommodations</h4>
-                        <ul id="accommodations-summary-list" class="list-group"></ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h4><i class="fas fa-car mr-2"></i>Car Rentals</h4>
-                        <ul id="cars-summary-list" class="list-group"></ul>
-                    </div>
-                    <div class="col-md-4">
-                        <h4><i class="fas fa-user-tie mr-2"></i>Travel Agencies</h4>
-                        <ul id="agencies-summary-list" class="list-group"></ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="action-buttons text-center mt-4">
-                </div>
         </div>
-    </section>
 
-    {% include 'components/footer.html' %}
+        <div id="summary-container">
+            <p class="text-center">Loading your trip details...</p>
+        </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('/api/trip/summary/')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Please log in to see your trip summary.');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Populate Attractions
-                    const attractionsList = document.getElementById('attractions-summary-list');
-                    attractionsList.innerHTML = '';
-                    if (data.attractions && data.attractions.length > 0) {
-                        data.attractions.forEach(item => {
-                            const listItem = `<a href="#" class="list-group-item list-group-item-action">${item.name}</a>`;
-                            attractionsList.innerHTML += listItem;
-                        });
-                    } else {
-                        attractionsList.innerHTML = '<p>No attractions selected.</p>';
-                    }
+        <div id="action-buttons-container" class="action-buttons text-center mt-4">
+            </div>
+    </div>
+</section>
 
-                    // Populate Accommodations
-                    const accommodationsList = document.getElementById('accommodations-summary-list');
-                    accommodationsList.innerHTML = '';
-                    if (data.accommodations && data.accommodations.length > 0) {
-                        data.accommodations.forEach(item => {
-                            const listItem = `<li class="list-group-item">${item.name}</li>`;
-                            accommodationsList.innerHTML += listItem;
-                        });
-                    } else {
-                        accommodationsList.innerHTML = '<li class="list-group-item">No accommodations selected.</li>';
-                    }
-                    // Populate Car Rentals
-                    const carsList = document.getElementById('cars-summary-list');
-                    carsList.innerHTML = '';
-                    if (data.car_rentals && data.car_rentals.length > 0) {
-                        data.car_rentals.forEach(item => {
-                            const listItem = `<li class="list-group-item">${item.name}</li>`;
-                            carsList.innerHTML += listItem;
-                        });
-                    } else {
-                        carsList.innerHTML = '<li class="list-group-item">No car rentals selected.</li>';
-                    }
-                    // Populate Travel Agencies
-                    const agenciesList = document.getElementById('agencies-summary-list');
-                    agenciesList.innerHTML = '';
-                    if (data.travel_agencies && data.travel_agencies.length > 0) {
-                        data.travel_agencies.forEach(item => {
-                            const listItem = `<li class="list-group-item">${item.name}</li>`;
-                            agenciesList.innerHTML += listItem;
-                        });
-                    } else {
-                        agenciesList.innerHTML = '<li class="list-group-item">No travel agencies selected.</li>';
-                    }
-                })
-                .catch(error => {
-                    const summaryContainer = document.querySelector('.trip-summary .container');
-                    summaryContainer.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
+<script>
+    // Helper function to get the CSRF token for secure POST requests
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/trip/summary/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Please log in and start a trip to see your summary.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById('summary-container');
+                container.innerHTML = ''; // Clear loading message
+
+                let totalCost = 0;
+
+                // --- Render Trip Dates ---
+                if (data.duration_days) {
+                    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+                    const startDate = new Date(data.start_date).toLocaleDateString(undefined, options);
+                    const endDate = new Date(data.end_date).toLocaleDateString(undefined, options);
+                    document.getElementById('date-range-display').textContent = `${startDate} - ${endDate}`;
+                    document.getElementById('duration-display').textContent = data.duration_days;
+                    document.getElementById('trip-dates-summary').style.display = 'block';
+                }
+
+                // --- Render Attractions ---
+                if (data.attractions && data.attractions.length > 0) {
+                    let attractionsHtml = `
+                        <div class="summary-section mb-4">
+                            <h3 class="section-title mb-4"><i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions</h3>
+                            <div class="row">`;
+                    data.attractions.forEach(item => {
+                        const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
+                        attractionsHtml += `
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card destination-card h-100">
+                                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${item.name}</h5>
+                                        <p class="card-text">${item.description}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    attractionsHtml += `</div></div>`;
+                    container.innerHTML += attractionsHtml;
+                }
+
+                // --- Render Selected Services ---
+                const services = (data.accommodations || []).concat(data.car_rentals || [], data.travel_agencies || []);
+                if (services.length > 0) {
+                    let servicesHtml = `
+                        <div class="summary-section mb-4">
+                            <h3 class="section-title mb-4"><i class="fas fa-concierge-bell mr-2"></i>Selected Services</h3>
+                            <div class="row">`;
+                    services.forEach(item => {
+                        const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
+                        const price = parseFloat(item.price || 0);
+                        if(price){ totalCost += price; }
+                        servicesHtml += `
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card service-card h-100">
+                                    ${price > 0 ? `<div class="card-badge">$${price}</div>` : ''}
+                                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}">
+                                    <div class="card-body"><h5 class="card-title">${item.name}</h5><p class="card-text">${item.description}</p></div>
+                                </div>
+                            </div>`;
+                    });
+                    servicesHtml += `</div></div>`;
+                    container.innerHTML += servicesHtml;
+                }
+
+                // --- Render Cost Breakdown ---
+                let costHtml = `
+                    <div class="summary-section mb-4">
+                        <h3 class="section-title mb-4"><i class="fas fa-calculator mr-2"></i>Trip Cost Breakdown</h3>
+                        <div class="row justify-content-center">
+                            <div class="col-lg-6 col-md-8">
+                                <div class="card trip-total-card"><div class="card-body"><div class="cost-breakdown">`;
+                (data.accommodations || []).forEach(item => {
+                    costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-bed mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
                 });
-        });
-    </script>
-</body>
-</html>
+                (data.car_rentals || []).forEach(item => {
+                    costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-car mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
+                });
+                costHtml += `
+                                    <hr class="my-3">
+                                    <div class="d-flex justify-content-between total-amount">
+                                        <span class="h4"><strong>Total Estimated Cost:</strong></span>
+                                        <span class="h4 text-primary"><strong>$${totalCost.toFixed(2)}</strong></span>
+                                    </div>
+                                </div></div></div></div></div></div>`;
+                container.innerHTML += costHtml;
+
+                // --- Render Action Buttons ---
+                const actionsContainer = document.getElementById('action-buttons-container');
+                actionsContainer.innerHTML = `
+                    <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
+                        <a href="{% url 'destinations' %}" class="btn btn-secondary btn-lg"><i class="fas fa-edit mr-2"></i>Modify Trip</a>
+                        <button class="btn btn-outline-success btn-lg" id="save-trip-btn"><i class="fas fa-save mr-2"></i>Save to Profile</button>
+                    </div>`;
+                
+                // --- Add Event Listener for the Save Button ---
+                document.getElementById('save-trip-btn').addEventListener('click', function() {
+                    fetch('/api/trip/save/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('Trip saved successfully!');
+                            window.location.href = "{% url 'profile' %}";
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                const container = document.getElementById('summary-container');
+                container.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
+            });
+    });
+</script>
+{% endblock %}
