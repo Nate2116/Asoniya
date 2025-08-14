@@ -14,6 +14,7 @@ urlpatterns = [
     path('car-rentals/', views.car_rentals_page, name='car_rentals'),
     path('profile/', views.profile_page, name='profile'),
     path('trip-summary/', views.trip_summary_page, name='trip_summary'),
+    path('trip/view/<int:trip_id>/', views.view_saved_trip_page, name='view_saved_trip'),
     path('terms-conditions/', views.terms_conditions_page, name='terms_conditions'),
     path('privacy-policy/', views.privacy_policy_page, name='privacy_policy'),
     path('signup/', views.signup_page, name='signup'),
@@ -30,7 +31,6 @@ urlpatterns = [
     path('api/trip/add/', views.add_to_trip_api, name='add-to-trip-api'),
     path('api/trip/dates/', views.update_trip_dates_api, name='update-trip-dates-api'),
     path('api/trip/save/', views.save_trip_api, name='save-trip-api'),
-    path('api/trips/saved/', views.list_saved_trips_api, name='list-saved-trips-api'),
     path('api/profile/', views.profile_api, name='profile-api'),
     path('api/trip/summary/', views.get_trip_summary_api, name='get-trip-summary-api'),
 ]

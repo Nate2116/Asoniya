@@ -61,53 +61,30 @@
 </section>
 
 <script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
-
     document.addEventListener('DOMContentLoaded', function() {
-        // Fetch personal info
+        // Make just one API call to get all profile data
         fetch('/api/profile/')
             .then(response => {
-                if (!response.ok) throw new Error('Not logged in');
+                if (!response.ok) {
+                    // This will trigger if the user is not logged in
+                    throw new Error('Please log in to view your profile.');
+                }
                 return response.json();
             })
             .then(data => {
+                // --- Populate Personal Info ---
                 const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
                 document.getElementById('user-fullname').textContent = fullName;
                 document.getElementById('user-email').textContent = data.email;
-            })
-            .catch(error => {
-                const infoContent = document.getElementById('personal-info-content');
-                infoContent.innerHTML = `<p class="text-muted">Please <a href="{% url 'login' %}">log in</a> to view your profile.</p>`;
-            });
 
-        // Fetch saved trips
-        fetch('/api/trips/saved/')
-            .then(response => {
-                if (!response.ok) throw new Error('Could not load trips.');
-                return response.json();
-            })
-            .then(data => {
+                // --- Populate Saved Trips ---
                 const tripsList = document.getElementById('saved-trips-list');
-                tripsList.innerHTML = ''; 
+                tripsList.innerHTML = ''; // Clear the "Loading..." message
 
-                if (data && data.length > 0) {
-                    data.forEach(trip => {
+                if (data.saved_trips && data.saved_trips.length > 0) {
+                    data.saved_trips.forEach(trip => {
                         const tripItemHTML = `
-                            <a href="#" class="list-group-item list-group-item-action">
+                            <a href="${trip.view_url}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">${trip.name}</h5>
                                     <small>${trip.item_count} items</small>
@@ -117,12 +94,13 @@
                         tripsList.innerHTML += tripItemHTML;
                     });
                 } else {
-                    tripsList.innerHTML = '<p class="text-muted">You have no saved trips. Start planning one from the <a href="{% url 'destinations\' %}">destinations page</a>!</p>';
+                    tripsList.innerHTML = '<p class="text-muted">You have no saved trips. Start planning one from the <a href="{% url 'destinations' %}">destinations page</a>!</p>';
                 }
             })
             .catch(error => {
-                const tripsList = document.getElementById('saved-trips-list');
-                tripsList.innerHTML = '<p class="text-muted">Could not load saved trips. Please log in and try again.</p>';
+                // This block will handle errors, including the "Not logged in" case
+                const profileContainer = document.querySelector('.profile-section .container');
+                profileContainer.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
             });
     });
 </script>

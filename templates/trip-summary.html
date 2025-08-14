@@ -4,7 +4,13 @@
 {% block content %}
 <section class="trip-summary py-5">
     <div class="container">
-        <h2 class="text-center mb-4">Your Trip Summary</h2>
+        <h2 class="text-center mb-4">
+            {% if trip %}
+                Summary for: {{ trip.name }}
+            {% else %}
+                Your Current Trip Summary
+            {% endif %}
+        </h2>
 
         <div class="summary-section mb-4 text-center">
             <div id="trip-dates-summary" class="alert alert-info" style="display: none;">
@@ -26,149 +32,155 @@
     </div>
 </section>
 
-<script>
-    // Helper function to get the CSRF token for secure POST requests
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+{% if trip %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('summary-container');
+        const datesContainer = document.getElementById('trip-dates-summary');
+        container.innerHTML = '';
+        
+        // --- Render Dates ---
+        const duration = "{{ duration_days }}";
+        if (duration) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+            const startDate = new Date("{{ trip.start_date|date:'Y-m-d' }}").toLocaleDateString(undefined, options);
+            const endDate = new Date("{{ trip.end_date|date:'Y-m-d' }}").toLocaleDateString(undefined, options);
+            datesContainer.style.display = 'block';
+            document.getElementById('date-range-display').textContent = `${startDate} - ${endDate}`;
+            document.getElementById('duration-display').textContent = duration;
+        }
+
+        // --- Render Attractions ---
+        {% if attractions %}
+        let attractionsHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions</h3><div class="row">`;
+        {% for item in attractions %}
+            const imageUrl = "{{ item.image.url|default:'' }}";
+            attractionsHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card destination-card h-100"><img src="${imageUrl || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="{{ item.name }}"><div class="card-body"><h5 class="card-title">{{ item.name }}</h5><p class="card-text">{{ item.description }}</p></div></div></div>`;
+        {% endfor %}
+        attractionsHtml += `</div></div>`;
+        container.innerHTML += attractionsHtml;
+        {% endif %}
+
+        // --- Render Services ---
+        {% if accommodations or car_rentals or travel_agencies %}
+        let servicesHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-concierge-bell mr-2"></i>Selected Services</h3><div class="row">`;
+        {% for item in accommodations %}
+            const imageUrl = "{{ item.image.url|default:'' }}";
+            servicesHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card service-card h-100"><div class="card-badge">$ {{ item.price_per_night }}</div><img src="${imageUrl || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="{{ item.name }}"><div class="card-body"><h5 class="card-title">{{ item.name }}</h5><p class="card-text">{{ item.description }}</p></div></div></div>`;
+        {% endfor %}
+        {% for item in car_rentals %}
+            const imageUrl = "{{ item.image.url|default:'' }}";
+            servicesHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card service-card h-100"><div class="card-badge">$ {{ item.price_per_day }}</div><img src="${imageUrl || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="{{ item.name }}"><div class="card-body"><h5 class="card-title">{{ item.name }}</h5><p class="card-text">{{ item.description }}</p></div></div></div>`;
+        {% endfor %}
+        {% for item in travel_agencies %}
+            const imageUrl = "{{ item.image.url|default:'' }}";
+            servicesHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card service-card h-100"><img src="${imageUrl || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="{{ item.name }}"><div class="card-body"><h5 class="card-title">{{ item.name }}</h5><p class="card-text">{{ item.description }}</p></div></div></div>`;
+        {% endfor %}
+        servicesHtml += `</div></div>`;
+        container.innerHTML += servicesHtml;
+        {% endif %}
+
+        // --- Render Cost Breakdown ---
+        let costHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-calculator mr-2"></i>Trip Cost Breakdown</h3><div class="row justify-content-center"><div class="col-lg-6 col-md-8"><div class="card trip-total-card"><div class="card-body"><div class="cost-breakdown"><hr class="my-3"><div class="d-flex justify-content-between total-amount"><span class="h4"><strong>Total Estimated Cost:</strong></span><span class="h4 text-primary"><strong>$ {{ total_cost|floatformat:2 }}</strong></span></div></div></div></div></div></div></div>`;
+        container.innerHTML += costHtml;
+    });
+    </script>
+{% else %}
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
+        const csrftoken = getCookie('csrftoken');
 
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/trip/summary/')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Please log in and start a trip to see your summary.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const container = document.getElementById('summary-container');
-                container.innerHTML = ''; // Clear loading message
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/trip/summary/')
+                .then(response => {
+                    if (!response.ok) throw new Error('Please log in and start a trip to see your summary.');
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById('summary-container');
+                    container.innerHTML = ''; 
 
-                let totalCost = 0;
+                    let totalCost = 0;
 
-                // --- Render Trip Dates ---
-                if (data.duration_days) {
-                    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
-                    const startDate = new Date(data.start_date).toLocaleDateString(undefined, options);
-                    const endDate = new Date(data.end_date).toLocaleDateString(undefined, options);
-                    document.getElementById('date-range-display').textContent = `${startDate} - ${endDate}`;
-                    document.getElementById('duration-display').textContent = data.duration_days;
-                    document.getElementById('trip-dates-summary').style.display = 'block';
-                }
+                    if (data.duration_days) {
+                        const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+                        const startDate = new Date(data.start_date).toLocaleDateString(undefined, options);
+                        const endDate = new Date(data.end_date).toLocaleDateString(undefined, options);
+                        document.getElementById('date-range-display').textContent = `${startDate} - ${endDate}`;
+                        document.getElementById('duration-display').textContent = data.duration_days;
+                        document.getElementById('trip-dates-summary').style.display = 'block';
+                    }
 
-                // --- Render Attractions ---
-                if (data.attractions && data.attractions.length > 0) {
-                    let attractionsHtml = `
-                        <div class="summary-section mb-4">
-                            <h3 class="section-title mb-4"><i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions</h3>
-                            <div class="row">`;
-                    data.attractions.forEach(item => {
-                        const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
-                        attractionsHtml += `
-                            <div class="col-lg-4 col-md-6 mb-4">
-                                <div class="card destination-card h-100">
-                                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${item.name}</h5>
-                                        <p class="card-text">${item.description}</p>
-                                    </div>
-                                </div>
-                            </div>`;
+                    if (data.attractions && data.attractions.length > 0) {
+                        let attractionsHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions</h3><div class="row">`;
+                        data.attractions.forEach(item => {
+                            const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
+                            attractionsHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card destination-card h-100"><img src="${imageUrl}" class="card-img-top" alt="${item.name}"><div class="card-body"><h5 class="card-title">${item.name}</h5><p class="card-text">${item.description}</p></div></div></div>`;
+                        });
+                        attractionsHtml += `</div></div>`;
+                        container.innerHTML += attractionsHtml;
+                    }
+
+                    const services = (data.accommodations || []).concat(data.car_rentals || [], data.travel_agencies || []);
+                    if (services.length > 0) {
+                        let servicesHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-concierge-bell mr-2"></i>Selected Services</h3><div class="row">`;
+                        services.forEach(item => {
+                            const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
+                            const price = parseFloat(item.price || 0);
+                            if(price){ totalCost += price; }
+                            servicesHtml += `<div class="col-lg-4 col-md-6 mb-4"><div class="card service-card h-100">${price > 0 ? `<div class="card-badge">$${price}</div>` : ''}<img src="${imageUrl}" class="card-img-top" alt="${item.name}"><div class="card-body"><h5 class="card-title">${item.name}</h5><p class="card-text">${item.description}</p></div></div></div>`;
+                        });
+                        servicesHtml += `</div></div>`;
+                        container.innerHTML += servicesHtml;
+                    }
+
+                    let costHtml = `<div class="summary-section mb-4"><h3 class="section-title mb-4"><i class="fas fa-calculator mr-2"></i>Trip Cost Breakdown</h3><div class="row justify-content-center"><div class="col-lg-6 col-md-8"><div class="card trip-total-card"><div class="card-body"><div class="cost-breakdown">`;
+                    (data.accommodations || []).forEach(item => {
+                        costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-bed mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
                     });
-                    attractionsHtml += `</div></div>`;
-                    container.innerHTML += attractionsHtml;
-                }
-
-                // --- Render Selected Services ---
-                const services = (data.accommodations || []).concat(data.car_rentals || [], data.travel_agencies || []);
-                if (services.length > 0) {
-                    let servicesHtml = `
-                        <div class="summary-section mb-4">
-                            <h3 class="section-title mb-4"><i class="fas fa-concierge-bell mr-2"></i>Selected Services</h3>
-                            <div class="row">`;
-                    services.forEach(item => {
-                        const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
-                        const price = parseFloat(item.price || 0);
-                        if(price){ totalCost += price; }
-                        servicesHtml += `
-                            <div class="col-lg-4 col-md-6 mb-4">
-                                <div class="card service-card h-100">
-                                    ${price > 0 ? `<div class="card-badge">$${price}</div>` : ''}
-                                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}">
-                                    <div class="card-body"><h5 class="card-title">${item.name}</h5><p class="card-text">${item.description}</p></div>
-                                </div>
-                            </div>`;
+                    (data.car_rentals || []).forEach(item => {
+                        costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-car mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
                     });
-                    servicesHtml += `</div></div>`;
-                    container.innerHTML += servicesHtml;
-                }
+                    costHtml += `<hr class="my-3"><div class="d-flex justify-content-between total-amount"><span class="h4"><strong>Total Estimated Cost:</strong></span><span class="h4 text-primary"><strong>$${totalCost.toFixed(2)}</strong></span></div></div></div></div></div></div></div>`;
+                    container.innerHTML += costHtml;
 
-                // --- Render Cost Breakdown ---
-                let costHtml = `
-                    <div class="summary-section mb-4">
-                        <h3 class="section-title mb-4"><i class="fas fa-calculator mr-2"></i>Trip Cost Breakdown</h3>
-                        <div class="row justify-content-center">
-                            <div class="col-lg-6 col-md-8">
-                                <div class="card trip-total-card"><div class="card-body"><div class="cost-breakdown">`;
-                (data.accommodations || []).forEach(item => {
-                    costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-bed mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
-                });
-                (data.car_rentals || []).forEach(item => {
-                    costHtml += `<div class="d-flex justify-content-between mb-2"><span><i class="fas fa-car mr-2"></i> ${item.name}:</span><span class="font-weight-bold">$${item.price}</span></div>`;
-                });
-                costHtml += `
-                                    <hr class="my-3">
-                                    <div class="d-flex justify-content-between total-amount">
-                                        <span class="h4"><strong>Total Estimated Cost:</strong></span>
-                                        <span class="h4 text-primary"><strong>$${totalCost.toFixed(2)}</strong></span>
-                                    </div>
-                                </div></div></div></div></div></div>`;
-                container.innerHTML += costHtml;
-
-                // --- Render Action Buttons ---
-                const actionsContainer = document.getElementById('action-buttons-container');
-                actionsContainer.innerHTML = `
-                    <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
-                        <a href="{% url 'destinations' %}" class="btn btn-secondary btn-lg"><i class="fas fa-edit mr-2"></i>Modify Trip</a>
-                        <button class="btn btn-outline-success btn-lg" id="save-trip-btn"><i class="fas fa-save mr-2"></i>Save to Profile</button>
-                    </div>`;
-                
-                // --- Add Event Listener for the Save Button ---
-                document.getElementById('save-trip-btn').addEventListener('click', function() {
-                    fetch('/api/trip/save/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            alert('Trip saved successfully!');
-                            window.location.href = "{% url 'profile' %}";
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
+                    const actionsContainer = document.getElementById('action-buttons-container');
+                    actionsContainer.innerHTML = `<div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3"><a href="{% url 'destinations' %}" class="btn btn-secondary btn-lg"><i class="fas fa-edit mr-2"></i>Modify Trip</a><button class="btn btn-outline-success btn-lg" id="save-trip-btn"><i class="fas fa-save mr-2"></i>Save to Profile</button></div>`;
+                    
+                    document.getElementById('save-trip-btn').addEventListener('click', function() {
+                        fetch('/api/trip/save/', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json','X-CSRFToken': csrftoken}
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Trip saved successfully!');
+                                window.location.href = "{% url 'profile' %}";
+                            } else {
+                                alert(`Error: ${data.error}`);
+                            }
+                        });
                     });
+                })
+                .catch(error => {
+                    const container = document.getElementById('summary-container');
+                    container.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
                 });
-            })
-            .catch(error => {
-                const container = document.getElementById('summary-container');
-                container.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
-            });
-    });
-</script>
+        });
+    </script>
+{% endif %}
 {% endblock %}

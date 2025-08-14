@@ -1,12 +1,12 @@
-# core/views.py
-
 from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import Destination, Accommodation, TravelAgency, CarRental, Attraction, Trip
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 import json
 
 # ===============================================
@@ -36,6 +36,38 @@ def profile_page(request):
 def trip_summary_page(request):
     return render(request, 'trip-summary.html')
 
+def view_saved_trip_page(request, trip_id):
+    # Find the specific trip by its ID, ensuring it belongs to the current user
+    trip = get_object_or_404(Trip, id=trip_id, user=request.user)
+    
+    # --- Manually gather all the data for the trip ---
+    duration = None
+    if trip.start_date and trip.end_date:
+        delta = trip.end_date - trip.start_date
+        duration = delta.days + 1
+
+    attractions = list(trip.attractions.all())
+    accommodations = list(trip.accommodations.all())
+    car_rentals = list(trip.car_rentals.all())
+    travel_agencies = list(trip.travel_agencies.all())
+
+    total_cost = 0
+    for item in accommodations:
+        total_cost += item.price_per_night
+    for item in car_rentals:
+        total_cost += item.price_per_day
+
+    # --- Pass all the gathered data into the template's context ---
+    context = {
+        'trip': trip,
+        'duration_days': duration,
+        'attractions': attractions,
+        'accommodations': accommodations,
+        'car_rentals': car_rentals,
+        'travel_agencies': travel_agencies,
+        'total_cost': total_cost,
+    }
+    return render(request, 'trip-summary.html', context)
 def terms_conditions_page(request):
     return render(request, 'terms-conditions.html')
 
@@ -219,23 +251,27 @@ def update_trip_dates_api(request):
 @login_required
 def profile_api(request):
     user = request.user
+
+    # Fetch all saved trips for the user
+    saved_trips = Trip.objects.filter(user=user, status='saved')
+
+    # Serialize the trip data into a list
+    trips_data = []
+    for trip in saved_trips:
+        trips_data.append({
+            'id': trip.id,
+            'name': trip.name,
+            'item_count': trip.attractions.count() + trip.accommodations.count(),
+            'view_url': reverse('view_saved_trip', args=[trip.id])
+        })
+
+    # Combine personal info and saved trips into one response
     data = {
         'username': user.username,
         'email': user.email,
         'first_name': user.first_name,
         'last_name': user.last_name,
+        'saved_trips': trips_data
     }
     return JsonResponse(data)
 
-@login_required
-def list_saved_trips_api(request):
-    saved_trips = Trip.objects.filter(user=request.user, status='saved')
-    data = []
-    for trip in saved_trips:
-        trip_data = {
-            'id': trip.id,
-            'name': trip.name,
-            'item_count': trip.attractions.count() + trip.accommodations.count() + trip.car_rentals.count()
-        }
-        data.append(trip_data)
-    return JsonResponse(data, safe=False)
