@@ -52,6 +52,14 @@
     padding: 0 20px;
 }
 
+.hero-title-custom {
+    font-family: "Nyala", "Abyssinica SIL", "Noto Serif Ethiopic", serif; /* Applies the new font */
+    font-size: 6rem; /* Adjust size as needed */
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
 .hero-content h1 {
     font-size: 3.5rem;
     font-weight: 700;
@@ -104,6 +112,10 @@
         height: 450px;
     }
     
+    .hero-title-custom {
+        font-size: 4.5rem;
+    }
+
     .hero-content h1 {
         font-size: 2.5rem;
     }
@@ -118,6 +130,10 @@
         height: 350px;
     }
     
+     .hero-title-custom {
+        font-size: 3.5rem;
+    }
+
     .hero-content h1 {
         font-size: 2rem;
     }
@@ -133,6 +149,7 @@
 }
 
 /* Card Standardization for All Pages */
+/* Card Standardization for All Pages */
 .destination-card,
 .attraction-card,
 .car-card,
@@ -144,7 +161,7 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     margin-bottom: 30px;
-    height: 420px;
+    /* width: 100%; */ /* Let Bootstrap grid handle width */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -896,6 +913,19 @@
 @import url('trip-summary.css');
 @import url('user-profiles.css');
 @import url('form.css');
+
+/* Utility: Clamp text to 3 lines */
+.text-truncate-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* Optional: ensure card descriptions can be clamped consistently */
+.card .card-text.text-truncate-3 {
+    max-height: 4.8em; /* approx 3 lines at ~1.6 line-height */
+}
 
 
 

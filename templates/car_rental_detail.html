@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .main-content {
+        background-color: #ffffff;
+        padding: 2.5rem;
+        border-radius: 15px;
+    }
+    .gallery-main {
+        border-radius: 15px;
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+    }
+    .gallery-thumbnails {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    .gallery-thumb {
+        border-radius: 10px;
+        height: 80px;
+        width: 100%;
+        object-fit: cover;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+    .gallery-thumb:hover, .gallery-thumb.active {
+        opacity: 1;
+        border: 3px solid #ffc107;
+        transform: scale(1.05);
+    }
+    .tour-card {
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .tour-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    .tour-card img {
+        height: 180px;
+        object-fit: cover;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+    .gallery-sticky-top {
+        top: 90px;
+        z-index: 100;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="main-content">
+        <div class="row detail-page-row">
+            <div class="col-lg-7 order-2 order-lg-1">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-0 mb-2">
+                        <li class="breadcrumb-item"><a href="{% url 'car_rentals' %}">Car Rentals</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ company.name }}</li>
+                    </ol>
+                </nav>
+
+                <h1 class="display-4">{{ company.name }}</h1>
+                <p class="lead text-muted mb-4">{{ company.description }}</p>
+
+                <hr class="my-4">
+
+                <h3 class="mb-4">Available Vehicles</h3>
+                <div class="row">
+                    {% for car in company.cars.all %}
+                    <div class="col-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card car-card h-100">
+                            <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ car.name }}</h5>
+                                <p class="card-text text-muted small flex-grow-1">{{ car.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="h5 text-primary mb-0"><strong>${{ car.price_per_day }}</strong>/day</span>
+                                    <button class="btn btn-sm btn-primary rounded-pill" onclick="addToTrip('{{ car.id }}', 'car')">Select</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12"><p>No specific cars listed for this rental service yet.</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-5 order-1 order-lg-2">
+                <div class="sticky-top gallery-sticky-top">
+                    <img src="{{ company.image.url }}" class="gallery-main" id="main-image" alt="{{ company.name }}">
+                    <div class="gallery-thumbnails">
+                        <img src="{{ company.image.url }}" class="gallery-thumb active" onclick="changeImage('{{ company.image.url }}', this)">
+                        {% for item in company.gallery_images.all %}
+                        <img src="{{ item.image.url }}" class="gallery-thumb" onclick="changeImage('{{ item.image.url }}', this)">
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary btn-lg w-100" onclick="addToTrip('{{ company.id }}', 'car_rental')">
+                            <i class="fas fa-plus mr-2"></i>Add Company to Trip
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function changeImage(imageUrl, element) {
+        document.getElementById('main-image').src = imageUrl;
+        document.querySelectorAll('.gallery-thumb').forEach(thumb => thumb.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function addToTrip(itemId, itemType) {
+        fetch('/api/trip/add/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ item_id: itemId, item_type: itemType })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Silent success/failure; optionally add subtle UI feedback later
+        }).catch(() => {});
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

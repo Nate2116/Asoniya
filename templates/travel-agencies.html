@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{% static 'css/footer.css' %}">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .text-truncate-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    </style>
 </head>
 <body>
     {% include 'components/header.html' %}
@@ -17,14 +20,7 @@
     <section class="travel-agencies py-5">
         <div class="container">
             <h2 class="text-center mb-4">Travel Agencies</h2>
-            <div class="row" id="agencies-list">
-                <div class="col-12 text-center"><p>Loading travel agencies...</p></div>
-            </div>
-        </div>
-    </section>
-
-    <section class="navigation-section py-4 bg-white border-top">
-        <div class="container">
+            <div class="row" id="item-list"></div>
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="progress-info">
@@ -44,7 +40,6 @@
                     </a>
                 </div>
             </div>
-        </div>
     </section>
 
     {% include 'components/footer.html' %}
@@ -52,82 +47,29 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
     <script>
-        // Helper function to get the CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-
-        // Reusable function to save any selected item to the user's trip
-        function selectItem(itemId, itemType, element) {
-            fetch('/api/trip/add/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    item_id: itemId,
-                    item_type: itemType // Note: backend expects 'travel_agency'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Toggle a 'selected' class for visual feedback
-                    element.classList.toggle('selected');
-                } else {
-                    alert('Could not save selection. Are you logged in?');
-                }
-            });
-        }    
-
-        // Function to fetch and display the travel agencies
-        function fetchAndRenderTravelAgencies() {
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('/api/travel-agencies/')
                 .then(response => response.json())
                 .then(data => {
-                    const list = document.getElementById('agencies-list');
-                    list.innerHTML = ''; // Clear the loading message
-
-                    if (!data || data.length === 0) {
-                        list.innerHTML = '<div class="col-12 text-center"><p>No travel agencies found.</p></div>';
-                        return;
-                    }
-
+                    const list = document.getElementById('item-list');
+                    list.innerHTML = '';
                     data.forEach(agency => {
-                        const imageUrl = agency.image_url || "{% static 'images/placeholder.jpg' %}";
+                        const detailUrl = `/travel-agencies/${agency.id}/`;
                         const card = `
-                            <div class="col-lg-4 col-md-6 mb-4">
-                                <div class="card h-100 selection-card" onclick="selectItem(${agency.id}, 'travel_agency', this)">
-                                    <img src="${imageUrl}" class="card-img-top" alt="${agency.name}">
-                                    <div class="card-body">
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <div class="card h-100">
+                                    <img src="${agency.image_url || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="${agency.name}">
+                                    <div class="card-body d-flex flex-column">
                                         <h5 class="card-title">${agency.name}</h5>
-                                        <p class="card-text">${agency.description}</p>
+                                        <p class="card-text flex-grow-1 text-truncate-3">${agency.description}</p>
+                                        <a href="${detailUrl}" class="btn btn-primary mt-auto">View Details</a>
                                     </div>
                                 </div>
                             </div>`;
                         list.innerHTML += card;
                     });
                 });
-        }
-
-        // Run the fetch function when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchAndRenderTravelAgencies();
         });
     </script>
 </body>

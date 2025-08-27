@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .destination-hero {
+        height: 85vh;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .destination-header {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 50px;
+        color: white;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent);
+    }
+    .destination-header .breadcrumb-item::before { color: #fff; }
+    .destination-header .breadcrumb-item a { color: #ffc107; text-decoration: none; }
+    .destination-header .breadcrumb-item.active { color: #fff; }
+    .attraction-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .attraction-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    .attraction-card img {
+        height: 220px;
+        object-fit: cover;
+    }
+    .section-title {
+        font-weight: 700;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: #ffc107;
+        border-radius: 2px;
+    }
+</style>
+
+<section class="destination-hero" style="background-image: url('{% if destination.image %}{{ destination.image.url }}{% endif %}');">
+    <div class="destination-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'destinations' %}">Destinations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ destination.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="display-2 font-weight-bold">{{ destination.name }}</h1>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <section class="mb-5 text-center">
+        <h2 class="section-title mb-4">About {{ destination.name }}</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <p class="text-muted">{{ destination.description }}</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title text-center mb-5">Attractions in {{ destination.name }}</h2>
+        <div class="row">
+            {% for attraction in destination.attractions.all %}
+            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <div class="card attraction-card h-100 shadow-sm">
+                    <img src="{{ attraction.image.url }}" class="card-img-top" alt="{{ attraction.name }}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ attraction.name }}</h5>
+                        <p class="card-text flex-grow-1 text-muted">{{ attraction.description|truncatewords:20 }}</p>
+                        <a href="{% url 'attraction_detail' attraction.id %}" class="btn btn-primary mt-3 stretched-link">Explore Attraction</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center"><p>No attractions have been added for this destination yet.</p></div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

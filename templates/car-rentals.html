@@ -10,20 +10,27 @@
     <link rel="stylesheet" href="{% static 'css/footer.css' %}">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* New style for truncating text to 3 lines */
+        .text-truncate-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+    </style>
 </head>
 <body>
     {% include 'components/header.html' %}
 
     <section class="car-rentals py-5">
         <div class="container">
-            <h2 class="text-center mb-4">Car Rentals</h2>
-            <div class="row" id="car-rentals-list">
-                <div class="col-12 text-center"><p>Loading car rentals...</p></div>
-            </div>
+            <h2 class="text-center mb-4">Car Rental Services</h2>
+            <div class="row" id="item-list"></div>
         </div>
     </section>
 
-    <section class="navigation-section py-4 bg-white border-top">
+   <section class="navigation-section py-4 bg-white border-top">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
@@ -52,74 +59,23 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
     <script>
-        // Helper function to get the CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-
-        // Universal function to save any item to the trip
-        function selectItem(itemId, itemType, element) {
-            fetch('/api/trip/add/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    item_id: itemId,
-                    item_type: itemType
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Toggle a 'selected' class for visual feedback
-                    element.classList.toggle('selected');
-                } else {
-                    alert('Could not save selection. Are you logged in?');
-                }
-            });
-        }
-
-        // Fetch and render car rentals when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             fetch('/api/car-rentals/')
                 .then(response => response.json())
                 .then(data => {
-                    const list = document.getElementById('car-rentals-list');
-                    list.innerHTML = ''; // Clear the "Loading..." message
-                    
-                    if (data.length === 0) {
-                        list.innerHTML = '<div class="col-12 text-center"><p>No car rentals found.</p></div>';
-                        return;
-                    }
-                    
-                    data.forEach(car => {
-                        const imageUrl = car.image_url ? car.image_url : "{% static 'images/placeholder.jpg' %}";
+                    const list = document.getElementById('item-list');
+                    list.innerHTML = '';
+                    data.forEach(company => {
+                        const detailUrl = `/car-rentals/${company.id}/`;
                         const card = `
-                            <div class="col-lg-4 col-md-6 mb-4">
-                                <div class="card selection-card h-100" onclick="selectItem(${car.id}, 'car_rental', this)">
-                                    <img src="${imageUrl}" class="card-img-top" alt="${car.name}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${car.name}</h5>
-                                        <p class="card-text">${car.description}</p>
-                                    </div>
-                                    <div class="card-footer">
-                                        <span class="price text-primary font-weight-bold">$${car.price}/day</span>
+                            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                                <div class="card h-100">
+                                    <img src="${company.image_url || '{% static "images/placeholder.jpg" %}'}" class="card-img-top" alt="${company.name}">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title">${company.name}</h5>
+                                        <p class="card-text flex-grow-1 text-truncate-3">${company.description}</p>
+                                        <a href="${detailUrl}" class="btn btn-primary mt-auto">View Details</a>
                                     </div>
                                 </div>
                             </div>`;

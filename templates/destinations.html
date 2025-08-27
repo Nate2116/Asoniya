@@ -14,7 +14,6 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
     {% include 'components/header.html' %}
@@ -30,13 +29,11 @@
                     <div class="row justify-content-center">
                         <div class="col-md-8">
                             <div class="date-picker-wrapper">
-                                <div class="date-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
+                                <div class="date-icon"><i class="fas fa-calendar-alt"></i></div>
                                 <input type="text" class="form-control custom-datepicker" id="visit-duration" placeholder="Select your travel dates...">
                             </div>
                             <div class="calendar-help-text">
-                                <p><i class="fas fa-info-circle"></i> The best time to visit Ethiopia is between October and March (dry season)</p>
+                                <p><i class="fas fa-info-circle"></i> The best time to visit Ethiopia is between October and March.</p>
                             </div>
                         </div>
                     </div>
@@ -48,46 +45,39 @@
     <section class="destinations py-5">
         <div class="container">
             <h2 class="text-center mb-4">Popular Destinations</h2>
-            <p class="text-center text-muted mb-5">Select destinations to explore their attractions</p>
+            <p class="text-center text-muted mb-5">Select a destination to see its attractions and details.</p>
             <div class="row">
                 {% for dest in destinations %}
-                <div class="col-md-4 mb-4">
-                    <div class="card selection-card destination-card" data-destination="{{ dest.name|slugify }}" onclick="selectDestination({{ dest.id }}, this)">
-                        <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}">
-                        <div class="card-body">
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="card destination-card h-100">
+                        <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 250px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ dest.name }}</h5>
-                            <p class="card-text">{{ dest.description }}</p>
-                        </div>
-                        <div class="card-footer text-center bg-light">
-                            <small class="text-primary font-weight-bold">Click to explore attractions</small>
+                            <p class="card-text flex-grow-1 text-truncate-3">{{ dest.description }}</p>
+                            <a href="{% url 'destination_detail' dest.id %}" class="btn btn-primary mt-3">Explore {{ dest.name }}</a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-        </div>
-    </section>
-
-    <section class="attractions-section py-5 bg-light" id="attractions-section" style="display: none;">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <h3 class="text-center mb-4">
-                        <i class="fas fa-map-marked-alt text-primary mr-2"></i>
-                        Attractions in <span id="selected-destination-name">Selected Destination</span>
-                    </h3>
-                    <p class="text-center text-muted mb-5">Select the attractions you'd like to visit</p>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="progress-info">
+                        <h6 class="mb-1">Trip Planning Progress</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">Step 1 of 4: Destinations</small>
+                    </div>
                 </div>
-            </div>
-            <div class="row" id="attractions-container">
-            </div>
-            <div class="text-center mt-4">
-                <button class="btn btn-outline-secondary mr-3" onclick="backToDestinations()">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Destinations
-                </button>
-                <a href="{% url 'accommodation' %}" class="btn btn-primary" id="select-attractions-btn">
-                    <i class="fas fa-check mr-2"></i>Continue
-                </a>
+                <div class="col-md-6 text-right">
+                    <a href="{% url 'index' %}" class="btn btn-outline-secondary mr-2">
+                        <i class="fas fa-arrow-left mr-1"></i>Back: Home
+                    </a>
+                    <a href="{% url 'accommodation' %}" class="btn btn-primary">
+                        Next: Accommodations <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
@@ -99,7 +89,44 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // Helper function to get the CSRF token for secure POST requests
+        // This script block is now much simpler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the date picker
+            flatpickr("#visit-duration", {
+                mode: "range",
+                dateFormat: "Y-m-d", // A standard format for APIs
+                minDate: "today",
+                onChange: function(selectedDates) {
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0].toISOString().split('T')[0];
+                        const endDate = selectedDates[1].toISOString().split('T')[0];
+                        
+                        // You can still save the dates to the user's active trip
+                        updateTripDates(startDate, endDate);
+                    }
+                }
+            });
+        });
+
+        function updateTripDates(startDate, endDate) {
+            const csrftoken = getCookie('csrftoken');
+            fetch('/api/trip/dates/update/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message); // Log success message to the console
+            });
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -114,109 +141,6 @@
             }
             return cookieValue;
         }
-        const csrftoken = getCookie('csrftoken');
-    
-        // This function is called when a destination card is clicked
-        function selectDestination(destinationId, element) {
-            const container = document.getElementById('attractions-container');
-            container.innerHTML = '<div class="col-12 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i></div>';
-    
-            // Show the attractions section and scroll to it
-            document.getElementById('attractions-section').style.display = 'block';
-            document.getElementById('attractions-section').scrollIntoView({ behavior: 'smooth' });
-    
-            // Fetch attractions for the selected destination from our API
-            fetch(`/api/destinations/${destinationId}/attractions/`)
-                .then(response => response.json())
-                .then(attractions => {
-                    loadAttractions(attractions);
-                });
-            
-            // Update the header text
-            const destinationName = element.querySelector('.card-title').textContent;
-            document.getElementById('selected-destination-name').textContent = destinationName;
-        }
-    
-        // This function renders the attraction cards fetched from the API
-        function loadAttractions(attractions) {
-            const container = document.getElementById('attractions-container');
-            container.innerHTML = ''; // Clear loading spinner
-    
-            if (attractions.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center"><p>No attractions found for this destination.</p></div>';
-                return;
-            }
-    
-            attractions.forEach(attraction => {
-                const imageUrl = attraction.image_url ? attraction.image_url : "{% static 'images/placeholder.jpg' %}";
-                const attractionCard = `
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card attraction-card selection-card" onclick="selectAttraction(${attraction.id}, this)">
-                            <img src="${imageUrl}" class="card-img-top" alt="${attraction.name}">
-                            <div class="card-body">
-                                <h5 class="card-title">${attraction.name}</h5>
-                                <p class="card-text">${attraction.description}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += attractionCard;
-            });
-        }
-    
-        // This function is called when an attraction card is clicked
-        function selectAttraction(attractionId, element) {
-            fetch('/api/trip/add/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    item_type: 'attraction',
-                    item_id: attractionId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Toggle the 'selected' class for visual feedback
-                    element.classList.toggle('selected');
-                } else {
-                    alert(data.error || 'Could not save selection. Are you logged in?');
-                }
-            });
-        }
-    
-        function backToDestinations() {
-            document.getElementById('attractions-section').style.display = 'none';
-        }
-    
-        // Initialize the date picker
-        flatpickr("#visit-duration", {
-            mode: "range",
-            dateFormat: "M j, Y",
-            minDate: "today",
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 2) {
-                    const startDate = selectedDates[0].toISOString().split('T')[0];
-                    const endDate = selectedDates[1].toISOString().split('T')[0];
-
-                    // Call the API to save the dates
-                    fetch('/api/trip/dates/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrftoken // Ensure csrftoken is defined
-                        },
-                        body: JSON.stringify({
-                            start_date: startDate,
-                            end_date: endDate
-                        })
-                    });
-                }
-            }
-        });
     </script>
 </body>
 </html>

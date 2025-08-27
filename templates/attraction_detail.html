@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #fff;
+    }
+    .attraction-hero {
+        height: 85vh;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .attraction-header {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 50px;
+        color: white;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent);
+    }
+    .attraction-header .breadcrumb-item::before { color: #fff; }
+    .attraction-header .breadcrumb-item a { color: #ffc107; text-decoration: none; }
+    .attraction-header .breadcrumb-item.active { color: #fff; }
+
+    /* --- New Masonry Gallery Styles --- */
+    .masonry-gallery {
+        column-count: 3; /* Number of columns */
+        column-gap: 1.5rem;
+    }
+    .masonry-item {
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        width: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .masonry-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.4s ease;
+    }
+    .masonry-item:hover img {
+        transform: scale(1.05);
+    }
+    @media (max-width: 991px) { .masonry-gallery { column-count: 2; } }
+    @media (max-width: 576px) { .masonry-gallery { column-count: 1; } }
+</style>
+
+<section class="attraction-hero" style="background-image: url('{% if attraction.image %}{{ attraction.image.url }}{% endif %}');">
+    <div class="attraction-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'destinations' %}">Destinations</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'destination_detail' attraction.destination.id %}">{{ attraction.destination.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ attraction.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="display-2 font-weight-bold">{{ attraction.name }}</h1>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="font-weight-bold mb-3">About {{ attraction.name }}</h2>
+            <p class="lead text-muted">{{ attraction.description }}</p>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm p-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ready to Visit?</h5>
+                    <p class="card-text text-muted">Add this incredible attraction to your personalized trip plan.</p>
+                    <button class="btn btn-primary btn-lg w-100" onclick="addToTrip('{{ attraction.id }}', 'attraction')">
+                        <i class="fas fa-plus mr-2"></i>Add to Trip
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if attraction.gallery_images.all %}
+    <hr class="my-5">
+    <h2 class="font-weight-bold mb-4 text-center">Photo Gallery</h2>
+    
+    <div class="masonry-gallery">
+        {% if attraction.image %}
+        <a href="{{ attraction.image.url }}" data-toggle="lightbox" data-gallery="attraction-gallery" class="masonry-item">
+            <img src="{{ attraction.image.url }}" alt="Cover image for {{ attraction.name }}">
+        </a>
+        {% endif %}
+
+        {% for item in attraction.gallery_images.all %}
+        <a href="{{ item.image.url }}" data-toggle="lightbox" data-gallery="attraction-gallery" class="masonry-item">
+            <img src="{{ item.image.url }}" alt="Gallery image for {{ attraction.name }}">
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function addToTrip(itemId, itemType) {
+        fetch('/api/trip/add/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify({ item_id: itemId, item_type: itemType })
+        }).then(res => res.json()).then(data => {
+            // Silent success/failure
+        }).catch(() => {});
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

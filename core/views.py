@@ -1,7 +1,8 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
+# core/views.py
+
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from .models import Destination, Accommodation, TravelAgency, CarRental, Attraction, Trip
+from .models import Destination, Attraction, AttractionImage, Accommodation, CarRental, Car, CarRentalImage, TravelAgency, TourPackage, TravelAgencyImage, Trip
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -20,6 +21,20 @@ def destinations_page(request):
     context = {'destinations': Destination.objects.all()}
     return render(request, 'destinations.html', context)
 
+def destination_detail_page(request, destination_id):
+    destination = get_object_or_404(Destination, id=destination_id)
+    context = {
+        'destination': destination,
+    }
+    return render(request, 'destination_detail.html', context)
+
+def attraction_detail_page(request, attraction_id):
+    attraction = get_object_or_404(Attraction, id=attraction_id)
+    context = {
+        'attraction': attraction,
+    }
+    return render(request, 'attraction_detail.html', context)
+
 def accommodation_page(request):
     context = {'destinations': Destination.objects.all()}
     return render(request, 'accommodation.html', context)
@@ -27,8 +42,22 @@ def accommodation_page(request):
 def travel_agencies_page(request):
     return render(request, 'travel-agencies.html')
 
+def travel_agency_detail_page(request, agency_id):
+    agency = get_object_or_404(TravelAgency, id=agency_id)
+    context = {
+        'agency': agency,
+    }
+    return render(request, 'travel_agency_detail.html', context)
+
 def car_rentals_page(request):
     return render(request, 'car-rentals.html')
+
+def car_rental_detail_page(request, rental_id):
+    rental_company = get_object_or_404(CarRental, id=rental_id)
+    context = {
+        'company': rental_company,
+    }
+    return render(request, 'car_rental_detail.html', context)
 
 def profile_page(request):
     return render(request, 'profile.html')
@@ -37,37 +66,36 @@ def trip_summary_page(request):
     return render(request, 'trip-summary.html')
 
 def view_saved_trip_page(request, trip_id):
-    # Find the specific trip by its ID, ensuring it belongs to the current user
     trip = get_object_or_404(Trip, id=trip_id, user=request.user)
     
-    # --- Manually gather all the data for the trip ---
     duration = None
     if trip.start_date and trip.end_date:
         delta = trip.end_date - trip.start_date
         duration = delta.days + 1
 
-    attractions = list(trip.attractions.all())
-    accommodations = list(trip.accommodations.all())
-    car_rentals = list(trip.car_rentals.all())
-    travel_agencies = list(trip.travel_agencies.all())
-
+    # --- THIS IS THE FIX ---
+    # The total cost should be calculated from the prices of individual cars,
+    # not from the CarRental company model.
     total_cost = 0
-    for item in accommodations:
+    for item in trip.accommodations.all():
         total_cost += item.price_per_night
-    for item in car_rentals:
-        total_cost += item.price_per_day
+    # Sum the price of each selected car
+    for item in trip.cars.all():
+        if item.price_per_day:
+            total_cost += item.price_per_day
 
-    # --- Pass all the gathered data into the template's context ---
     context = {
         'trip': trip,
         'duration_days': duration,
-        'attractions': attractions,
-        'accommodations': accommodations,
-        'car_rentals': car_rentals,
-        'travel_agencies': travel_agencies,
+        'attractions': list(trip.attractions.all()),
+        'accommodations': list(trip.accommodations.all()),
+        'car_rentals': list(trip.car_rentals.all()),
+        'cars': list(trip.cars.all()),
+        'travel_agencies': list(trip.travel_agencies.all()),
         'total_cost': total_cost,
     }
     return render(request, 'trip-summary.html', context)
+
 def terms_conditions_page(request):
     return render(request, 'terms-conditions.html')
 
@@ -110,7 +138,7 @@ def travel_agency_list_api(request):
 
 def car_rental_list_api(request):
     cars = CarRental.objects.all()
-    data = [{'id': item.id, 'name': item.name, 'description': item.description, 'price_per_day': str(item.price_per_day), 'image_url': item.image.url if item.image else None} for item in cars]
+    data = [{'id': item.id, 'name': item.name, 'description': item.description, 'image_url': item.image.url if item.image else None} for item in cars]
     return JsonResponse(data, safe=False)
 
 # ===============================================
@@ -168,10 +196,14 @@ def add_to_trip_api(request):
         if not item_id or not item_type:
             return JsonResponse({'error': 'Missing item ID or type'}, status=400)
 
+        # Get or create an active trip for the user
         trip, created = Trip.objects.get_or_create(user=request.user, status='active')
 
         try:
-            if item_type == 'attraction':
+            if item_type == 'destination':
+                item = Destination.objects.get(id=item_id)
+                trip.destinations.add(item)
+            elif item_type == 'attraction':
                 item = Attraction.objects.get(id=item_id)
                 trip.attractions.add(item)
             elif item_type == 'accommodation':
@@ -180,54 +212,57 @@ def add_to_trip_api(request):
             elif item_type == 'car_rental':
                 item = CarRental.objects.get(id=item_id)
                 trip.car_rentals.add(item)
+            elif item_type == 'car':
+                item = Car.objects.get(id=item_id)
+                trip.cars.add(item)
             elif item_type == 'travel_agency':
                 item = TravelAgency.objects.get(id=item_id)
                 trip.travel_agencies.add(item)
+            elif item_type == 'tour_package':
+                item = TourPackage.objects.get(id=item_id)
+                trip.tour_packages.add(item)
             else:
                 return JsonResponse({'error': 'Invalid item type'}, status=400)
-            return JsonResponse({'status': 'success', 'message': f'{item_type} with id {item_id} added to trip.'})
+            return JsonResponse({'status': 'success', 'message': f'{item_type.replace("_", " ").title()} added to trip.'})
         except Exception as e:
             return JsonResponse({'error': f'Could not find item. Details: {str(e)}'}, status=404)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 @login_required
 def get_trip_summary_api(request):
-    try:
-        trip = Trip.objects.get(user=request.user, status='active')
-        
-        duration = None
-        if trip.start_date and trip.end_date:
-            delta = trip.end_date - trip.start_date
-            duration = delta.days + 1
+    trip = Trip.objects.filter(user=request.user, status='active').first()
+    if not trip:
+        return JsonResponse({'error': 'No active trip found.'}, status=404)
 
-        attractions = [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else None} for attr in trip.attractions.all()]
-        accommodations = [{'name': acc.name, 'description': acc.description, 'price': str(acc.price_per_night), 'image_url': acc.image.url if acc.image else None} for acc in trip.accommodations.all()]
-        car_rentals = [{'name': car.name, 'description': car.description, 'price': str(car.price_per_day), 'image_url': car.image.url if car.image else None} for car in trip.car_rentals.all()]
-        travel_agencies = [{'name': agency.name, 'description': agency.description, 'image_url': agency.image.url if agency.image else None} for agency in trip.travel_agencies.all()]
+    # --- THIS IS THE FIX ---
+    # We serialize the selected cars, not the rental companies for the price.
+    accommodations = [{'name': acc.name, 'description': acc.description, 'price': acc.price_per_night, 'image_url': acc.image.url if acc.image else ''} for acc in trip.accommodations.all()]
+    selected_cars = [{'name': car.name, 'description': car.description, 'price': car.price_per_day, 'image_url': car.image.url if car.image else ''} for car in trip.cars.all()]
+    
+    # The cost is calculated from accommodations and selected cars.
+    total_cost = sum(a['price'] for a in accommodations) + sum(c['price'] for c in selected_cars if c['price'])
 
-        data = {
-            'start_date': trip.start_date,
-            'end_date': trip.end_date,
-            'duration_days': duration,
-            'attractions': attractions,
-            'accommodations': accommodations,
-            'car_rentals': car_rentals,
-            'travel_agencies': travel_agencies,
-        }
-        return JsonResponse(data)
-    except Trip.DoesNotExist:
-        return JsonResponse({'error': 'No active trip has been started.'}, status=404)
+    data = {
+        'trip_name': trip.name,
+        'attractions': [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else ''} for attr in trip.attractions.all()],
+        'accommodations': accommodations,
+        'cars': selected_cars, # Send the detailed car list
+        'car_rentals': [{'name': cr.name} for cr in trip.car_rentals.all()], # Still useful to know the company
+        'travel_agencies': [{'name': agency.name} for agency in trip.travel_agencies.all()],
+        'total_cost': total_cost
+    }
+    return JsonResponse(data)
     
 @login_required
 def save_trip_api(request):
     if request.method == 'POST':
         try:
             active_trip = Trip.objects.get(user=request.user, status='active')
-            first_attraction = active_trip.attractions.first()
-            if first_attraction:
-                active_trip.name = f"Trip including {first_attraction.name}"
+            first_destination = active_trip.destinations.first()
+            if first_destination:
+                active_trip.name = f"Trip to {first_destination.name}"
             else:
-                active_trip.name = "My Saved Trip"
+                active_trip.name = "My Saved Ethiopian Trip"
             active_trip.status = 'saved'
             active_trip.save()
             return JsonResponse({'status': 'success', 'message': 'Trip has been saved to your profile.'})
@@ -251,27 +286,40 @@ def update_trip_dates_api(request):
 @login_required
 def profile_api(request):
     user = request.user
+    if request.method == 'GET':
+        # Fetch all trips for the user, regardless of status
+        all_user_trips = Trip.objects.filter(user=user)
 
-    # Fetch all saved trips for the user
-    saved_trips = Trip.objects.filter(user=user, status='saved')
+        # Serialize the trip data into a list
+        trips_data = []
+        for trip in all_user_trips:
+            # --- FIXED: Added attractions.count() to the item count ---
+            item_count = trip.destinations.count() + trip.attractions.count() + \
+                         trip.accommodations.count() + trip.car_rentals.count() + \
+                         trip.travel_agencies.count()
+            trips_data.append({
+                'id': trip.id,
+                'name': trip.name,
+                'status': trip.get_status_display(),
+                'item_count': item_count,
+                'view_url': reverse('view_saved_trip', args=[trip.id])
+            })
 
-    # Serialize the trip data into a list
-    trips_data = []
-    for trip in saved_trips:
-        trips_data.append({
-            'id': trip.id,
-            'name': trip.name,
-            'item_count': trip.attractions.count() + trip.accommodations.count(),
-            'view_url': reverse('view_saved_trip', args=[trip.id])
-        })
-
-    # Combine personal info and saved trips into one response
-    data = {
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'saved_trips': trips_data
-    }
-    return JsonResponse(data)
-
+        # Combine personal info and all trips into one response
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'saved_trips': trips_data 
+        }
+        return JsonResponse(data)
+        
+    elif request.method == 'POST':
+        # This part handles updating the user's profile information.
+        data = json.loads(request.body)
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+        user.save()
+        return JsonResponse({'status': 'success', 'message': 'Profile updated.'})
