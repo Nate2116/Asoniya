@@ -126,12 +126,12 @@ document.addEventListener('DOMContentLoaded', function() {
             list.innerHTML = '';
             data.forEach(attr => {
                 const card = `
-                    <div class="col-6 col-md-4 col-lg-3 mb-4 card-grid-col">
+                    <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card attraction-card selection-card" onclick="addToTrip(${attr.id}, 'attraction')">
                             <img src="${attr.image}" class="card-img-top" alt="${attr.name}">
                             <div class="card-body">
                                 <h5 class="card-title">${attr.name}</h5>
-                                <p class="card-text text-truncate-3">${attr.description}</p>
+                                <p class="card-text">${attr.description}</p>
                             </div>
                         </div>
                     </div>`;

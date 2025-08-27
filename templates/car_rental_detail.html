@@ -61,8 +61,8 @@
 
 <div class="container py-5">
     <div class="main-content">
-        <div class="row detail-page-row">
-            <div class="col-lg-7 order-2 order-lg-1">
+        <div class="row">
+            <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb bg-transparent p-0 mb-2">
                         <li class="breadcrumb-item"><a href="{% url 'car_rentals' %}">Car Rentals</a></li>
@@ -78,7 +78,7 @@
                 <h3 class="mb-4">Available Vehicles</h3>
                 <div class="row">
                     {% for car in company.cars.all %}
-                    <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="col-md-6 mb-4">
                         <div class="card car-card h-100">
                             <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}">
                             <div class="card-body d-flex flex-column">
@@ -97,7 +97,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-5 order-1 order-lg-2">
+            <div class="col-lg-5">
                 <div class="sticky-top gallery-sticky-top">
                     <img src="{{ company.image.url }}" class="gallery-main" id="main-image" alt="{{ company.name }}">
                     <div class="gallery-thumbnails">

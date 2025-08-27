@@ -48,12 +48,12 @@
             <p class="text-center text-muted mb-5">Select a destination to see its attractions and details.</p>
             <div class="row">
                 {% for dest in destinations %}
-                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card destination-card h-100">
                         <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 250px; object-fit: cover;">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ dest.name }}</h5>
-                            <p class="card-text flex-grow-1 text-truncate-3">{{ dest.description }}</p>
+                            <p class="card-text flex-grow-1">{{ dest.description|truncatewords:25 }}</p>
                             <a href="{% url 'destination_detail' dest.id %}" class="btn btn-primary mt-3">Explore {{ dest.name }}</a>
                         </div>
                     </div>
