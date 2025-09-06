@@ -149,6 +149,7 @@
 }
 
 /* Card Standardization for All Pages */
+/* Card Standardization for All Pages */
 .destination-card,
 .attraction-card,
 .car-card,
@@ -160,7 +161,8 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     margin-bottom: 30px;
-    height: 420px;
+    height: 380px;
+    /* width: 100%; */ /* Let Bootstrap grid handle width */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -176,7 +178,7 @@
 }
 
 .card-image-container {
-    height: 250px;
+    height: 200px;
     overflow: hidden;
     position: relative;
 }
@@ -452,6 +454,31 @@
     max-width: 700px;
     margin: 0 auto;
     padding-top: 15px;
+}
+
+/* Responsive styles for Home Page Sections */
+@media (max-width: 991px) {
+    .info-box h3 {
+        font-size: 1.6rem;
+    }
+    .service-box h4 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .section-heading h2 {
+        font-size: 2rem;
+    }
+    .info-box, .service-box {
+        margin-bottom: 20px;
+    }
+    .info-section .row > div {
+        margin-bottom: 1rem;
+    }
+    .service-box {
+        padding: 20px;
+    }
 }
 
 /* Standardized Card Styling for All Pages */
@@ -803,26 +830,6 @@
 }
 
 /* Navigation and Progress Tracking Styles */
-.navigation-section {
-    background: #f8f9fa;
-    border-top: 3px solid #ffc107;
-}
-
-.progress-info h6 {
-    color: #333;
-    font-weight: 600;
-}
-
-.progress {
-    height: 8px;
-    border-radius: 10px;
-    background-color: #e9ecef;
-}
-
-.progress-bar {
-    border-radius: 10px;
-    transition: width 0.6s ease;
-}
 
 .visit-duration .card {
     border: 2px solid #ffc107;
@@ -859,45 +866,16 @@
     padding-bottom: 8px;
 }
 
-/* Enhanced selection states */
-.selection-card.selected {
-    border: 3px solid #ffc107;
-    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
-    transform: translateY(-2px);
+/* Enhanced selection states for buttons */
+.btn.selected {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: white !important;
 }
 
-.selection-card.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #28a745;
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.btn.selected::after {
+    content: ' ✔'; /* Adds a checkmark after the text */
     font-weight: bold;
-    z-index: 10;
-}
-
-/* Responsive navigation */
-@media (max-width: 768px) {
-    .navigation-section .btn {
-        margin-bottom: 10px;
-        width: 100%;
-    }
-    
-    .navigation-section .col-md-6:last-child {
-        text-align: center !important;
-        margin-top: 20px;
-    }
-    
-    .progress-info {
-        text-align: center;
-    }
 }
 
 /* Additional CSS imports for modular styling */
@@ -912,7 +890,7 @@
 @import url('trip-summary.css');
 @import url('user-profiles.css');
 @import url('form.css');
-
+@import url('progress-bar.css');
 
 
 

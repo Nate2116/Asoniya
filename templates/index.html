@@ -20,24 +20,16 @@
     {% include 'components/header.html' %}
 
     <!-- Hero Section with Slideshow -->
-    <section class="hero">
+        <section class="hero">
         <div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel" data-interval="5000">
             <div class="carousel-inner">
-                <div class="carousel-item active">
+                {% for image in carousel_images %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
                     <div class="carousel-image-container">
-                        <img src="{% static 'images/slide1.jpg' %}" class="d-block w-100 carousel-image" alt="Discover Ethiopia">
+                        <img src="{{ image.image.url }}" class="d-block w-100 carousel-image" alt="{{ image.title }}">
                     </div>
                 </div>
-                <div class="carousel-item">
-                    <div class="carousel-image-container">
-                        <img src="{% static 'images/slide2.jpg' %}" class="d-block w-100 carousel-image" alt="Experience Ethiopia">
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="carousel-image-container">
-                        <img src="{% static 'images/slide3.jpg' %}" class="d-block w-100 carousel-image" alt="Explore Ethiopia">
-                    </div>
-                </div>
+                {% endfor %}
             </div>
             <div class="carousel-overlay">
                 <div class="hero-content">
@@ -65,13 +57,13 @@
                 <p>Everything you need to know before your Ethiopian adventure</p>
             </div>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="info-box">
                         <h3><i class="fas fa-globe-africa mr-2"></i> About Ethiopia</h3>
                         <p>Ethiopia is a land of ancient history, stunning landscapes, and vibrant cultures. It boasts unique tourist attractions such as the rock-hewn churches of Lalibela, the Simien Mountains, and the historical city of Axum.</p>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="info-box">
                         <h3><i class="fas fa-passport mr-2"></i> Legal, Medical & Visa Requirements</h3>
                         <p>Visitors must obtain a visa before arrival or on arrival for eligible nationalities. Ensure vaccinations for yellow fever and other necessary health precautions.</p>
@@ -79,13 +71,13 @@
                 </div>
             </div>
             <div class="row mt-4">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="info-box">
                         <h3><i class="fas fa-money-bill-wave mr-2"></i> Current Exchange Rates</h3>
                         <p>The Ethiopian currency is the Ethiopian Birr (ETB). Check with local banks for the latest exchange rates.</p>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="info-box">
                         <h3><i class="fas fa-first-aid mr-2"></i> Emergency Information</h3>
                         <ul class="list-unstyled">
@@ -108,7 +100,7 @@
                 <p>We're here to make your Ethiopian journey unforgettable</p>
             </div>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <div class="service-box">
                         <div class="icon">
                             <i class="fas fa-route"></i>
@@ -117,7 +109,7 @@
                         <p>We create personalized itineraries to match your travel dreams and preferences, ensuring you experience the best of Ethiopia.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <div class="service-box">
                         <div class="icon">
                             <i class="fas fa-hotel"></i>
@@ -126,7 +118,7 @@
                         <p>Find the best hotels and lodges to suit your budget, from luxury resorts to authentic guest houses across Ethiopia.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <div class="service-box">
                         <div class="icon">
                             <i class="fas fa-map-marked-alt"></i>

@@ -1,28 +1,53 @@
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .hero {
-        min-height: 400px;
-    }
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
 
-    .hero-content {
-        padding: 60px 0;
-    }
+/* --- Medium Devices (Tablets, landscape phones, screen width >= 768px) --- */
+@media (min-width: 768px) {
+    /* Add any tablet-specific styles here if needed */
+}
 
-    .navbar-brand h1 {
-        font-size: 20px;
-    }
+/* --- Small Devices (Portrait phones, screen width < 768px) --- */
+@media (max-width: 767.98px) {
+    /* General Typography */
+    h1, .display-4 { font-size: 2.5rem; }
+    h2 { font-size: 1.75rem; }
+    .lead { font-size: 1.1rem; }
 
-    .card-img-top {
-        height: 180px;
+    /* Hero Section */
+    .hero, .destination-hero, .attraction-hero { height: 60vh; }
+    .hero-content h1, .hero-title-custom { font-size: 3rem !important; }
+
+
+    /* Section Spacing */
+    .py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+
+    /* Card Layouts */
+    .card-img-top { height: 180px; }
+    .card-title { font-size: 1.1rem; }
+    .card-text { font-size: 0.9rem; }
+    
+    /* Specific Page Layouts */
+    .main-content { padding: 1.5rem; }
+    .gallery-main { height: 300px; }
+    .gallery-thumb { height: 70px; }
+
+    /* Make two-column detail pages stack into one column */
+    .detail-page-row {
+        flex-direction: column;
     }
 }
 
-@media (max-width: 576px) {
-    .container {
-        padding: 0 20px;
+/* --- Extra Small Devices (Smaller phones, screen width < 576px) --- */
+@media (max-width: 575.98px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    
+    /* Make card grids 1-column on very small screens for readability */
+    .card-grid-col {
+        flex: 0 0 100%;
+        max-width: 100%;
     }
-
-    .hero-content h1 {
-        font-size: 24px;
-    }
+    
+    .hero-content h1, .hero-title-custom { font-size: 2.5rem !important; }
+    .hero-content p { font-size: 1rem; }
 }

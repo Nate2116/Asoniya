@@ -83,11 +83,16 @@
 
                 if (data.saved_trips && data.saved_trips.length > 0) {
                     data.saved_trips.forEach(trip => {
+                        let tripDates = '';
+                        if (trip.start_date && trip.end_date) {
+                            tripDates = `<small class="text-muted">${trip.start_date} - ${trip.end_date}</small>`;
+                        }
+
                         const tripItemHTML = `
                             <a href="${trip.view_url}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">${trip.name}</h5>
-                                    <small>${trip.item_count} items</small>
+                                    ${tripDates}
                                 </div>
                                 <p class="mb-1">Click to view this trip summary.</p>
                             </a>`;

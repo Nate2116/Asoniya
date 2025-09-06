@@ -6,123 +6,118 @@
     .section-title { color: #333; font-weight: 600; border-bottom: 3px solid #ffc107; padding-bottom: 10px; display: inline-block; margin-bottom: 2rem; }
     .trip-total-card { border: 2px solid #ffc107; box-shadow: 0 5px 20px rgba(255,193,7,0.2); }
     .total-amount { background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 1rem; border-radius: 10px; }
+    .destination-group { margin-bottom: 2rem; }
+    .destination-group-title {
+        font-size: 1.8rem;
+        color: #333;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .display-4 {
+            font-size: 2.5rem;
+        }
+        .section-title, .destination-group-title {
+            font-size: 1.5rem;
+        }
+        .card-title {
+            font-size: 1.1rem;
+        }
+        .card-body {
+            padding: 1rem;
+        }
+        .card-img-top {
+            height: 150px !important;
+        }
+    }
 </style>
 
 <section class="trip-summary py-5">
     <div class="container">
-        <h2 id="trip-title" class="text-center mb-4">Your Trip Summary</h2>
+        <h2 id="trip-title" class="text-center mb-2 display-4">Your Trip Summary</h2>
+        <p id="trip-duration" class="text-center text-muted h5 mb-5"></p> 
         <div id="summary-container"><p class="text-center">Loading your trip details...</p></div>
         <div id="action-buttons-container" class="action-buttons text-center mt-4"></div>
     </div>
 </section>
 
-{% if trip %}
+{% if trip_json %}
 <script id="trip-data" type="application/json">
-{
-    "trip_name": "{{ trip.name }}",
-    "is_saved_trip": true,
-    "start_date": "{{ trip.start_date|date:'Y-m-d' }}", "end_date": "{{ trip.end_date|date:'Y-m-d' }}",
-    "duration_days": "{{ duration_days }}",
-    "attractions": [
-        {% for item in attractions %}
-        { "name": "{{ item.name }}", "description": "{{ item.description|escapejs }}", "image_url": "{% if item.image %}{{ item.image.url }}{% endif %}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ],
-    "accommodations": [
-        {% for item in accommodations %}
-        { "name": "{{ item.name }}", "description": "{{ item.description|escapejs }}", "price": "{{ item.price_per_night }}", "image_url": "{% if item.image %}{{ item.image.url }}{% endif %}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ],
-    "car_rentals": [
-        {% for item in car_rentals %}
-        { "name": "{{ item.name }}", "description": "{{ item.description|escapejs }}", "price": "{{ item.price_per_day }}", "image_url": "{% if item.image %}{{ item.image.url }}{% endif %}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ],
-    "travel_agencies": [
-        {% for item in travel_agencies %}
-        { "name": "{{ item.name }}", "description": "{{ item.description|escapejs }}", "image_url": "{% if item.image %}{{ item.image.url }}{% endif %}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ],
-    "tour_packages": [
-        {% for item in tour_packages %}
-        { "name": "{{ item.name }}", "description": "{{ item.description|escapejs }}", "price": "{{ item.price }}", "duration_days": "{{ item.duration_days }}", "image_url": "{% if item.image %}{{ item.image.url }}{% endif %}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ],
-    "total_cost": "{{ total_cost|floatformat:2 }}"
-}
+    {{ trip_json|safe }}
 </script>
 {% endif %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const embeddedData = document.getElementById('trip-data');
-        if (embeddedData) {
-            renderTripSummary(JSON.parse(embeddedData.textContent));
-        } else {
-            fetch('/api/trip/summary/')
-                .then(res => res.ok ? res.json() : Promise.reject(new Error('Please log in and start a trip to see your summary.')))
-                .then(renderTripSummary)
-                .catch(err => {
-                    document.getElementById('summary-container').innerHTML = `<div class="alert alert-warning text-center">${err.message}</div>`;
-                });
-        }
-    });
-
     function renderTripSummary(data) {
+            // --- Trip duration ---
+        const durationEl = document.getElementById('trip-duration');
+        // This part now primarily serves NEW trips, but also works as a fallback.
+        if (durationEl.innerHTML === '' && data.start_date && data.end_date) {
+            durationEl.innerHTML = `<i class="fas fa-calendar-alt mr-2"></i> ${data.start_date} - ${data.end_date} (${data.duration_days} days)`;
+        }
+
         const container = document.getElementById('summary-container');
         document.getElementById('trip-title').textContent = data.trip_name || 'Your Trip Summary';
         container.innerHTML = '';
 
         let html = '';
-        const totalCost = parseFloat(data.total_cost) || 0;
 
-        // --- Render Attractions ---
-        if (data.attractions && data.attractions.length > 0) {
-            html += `<div class="summary-section mb-4"><h3 class="section-title"><i class="fas fa-map-marked-alt mr-2"></i>Selected Attractions</h3><div class="row">`;
-            data.attractions.forEach(item => {
-                const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
-                html += `
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <img src="${imageUrl}" class="card-img-top" alt="${item.name}" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <h5 class="card-title">${item.name}</h5>
-                                <p class="card-text">${item.description}</p>
-                            </div>
-                        </div>
-                    </div>`;
+        // --- Destinations, Attractions, and Accommodations ---
+        if (data.destinations && data.destinations.length > 0) {
+            data.destinations.forEach(dest => {
+                html += `<div class="destination-group">`;
+                html += `<h3 class="destination-group-title"><i class="fas fa-map-marker-alt text-primary mr-2"></i>${dest.name}</h3>`;
+                
+                let contentRendered = false;
+                if (dest.attractions && dest.attractions.length > 0) {
+                    contentRendered = true;
+                    html += `<h5>Attractions</h5><div class="row">`;
+                    dest.attractions.forEach(item => {
+                        html += createCard(item);
+                    });
+                    html += `</div>`;
+                }
+
+                if (dest.accommodations && dest.accommodations.length > 0) {
+                    contentRendered = true;
+                    html += `<h5 class="mt-4">Accommodations</h5><div class="row">`;
+                    dest.accommodations.forEach(item => {
+                        html += createCard(item);
+                    });
+                    html += `</div>`;
+                }
+
+                if (!contentRendered) {
+                    html += `<p class="text-muted">No services selected for this destination.</p>`;
+                }
+                html += `</div>`;
             });
-            html += `</div></div>`;
         }
+        
+        // --- Other Services ---
+        const services = {
+            'Car Rental Companies': { items: data.car_rentals, icon: 'fa-building' },
+            'Selected Vehicles': { items: data.cars, icon: 'fa-car' },
+            'Travel Agencies': { items: data.travel_agencies, icon: 'fa-handshake' },
+            'Tour Packages': { items: data.tour_packages, icon: 'fa-suitcase-rolling' }
+        };
 
-        // --- Render Other Services ---
-        const services = [
-            ...(data.accommodations || []), 
-            ...(data.car_rentals || []), 
-            ...(data.travel_agencies || []),
-            ...(data.tour_packages || [])
-        ];
-        if (services.length > 0) {
-            html += `<div class="summary-section mb-4"><h3 class="section-title"><i class="fas fa-concierge-bell mr-2"></i>Selected Services</h3><div class="row">`;
-            services.forEach(item => {
-                const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
-                const price = parseFloat(item.price || 0);
-                html += `
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            ${price > 0 ? `<div class="card-badge">$${price.toFixed(2)}</div>` : ''}
-                            <img src="${imageUrl}" class="card-img-top" alt="${item.name}" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <h5 class="card-title">${item.name}</h5>
-                                <p class="card-text">${item.description}</p>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-            html += `</div></div>`;
+        for (const title in services) {
+            const service = services[title];
+            if (service.items && service.items.length > 0) {
+                html += `<h3 class="section-title"><i class="fas ${service.icon} mr-2"></i>${title}</h3><div class="row">`;
+                service.items.forEach(item => {
+                    html += createCard(item);
+                });
+                html += `</div>`;
+            }
         }
-
+        
         // --- Render Cost Breakdown ---
+        const totalCost = parseFloat(data.total_cost) || 0;
         html += `
             <div class="summary-section mb-4">
                 <h3 class="section-title"><i class="fas fa-calculator mr-2"></i>Trip Cost</h3>
@@ -140,7 +135,7 @@
             </div>`;
         container.innerHTML = html;
 
-        // --- Render Action Buttons ---
+        // --- Action Buttons ---
         const actionsContainer = document.getElementById('action-buttons-container');
         if (data.is_saved_trip) {
             actionsContainer.innerHTML = `<a href="{% url 'profile' %}" class="btn btn-secondary btn-lg"><i class="fas fa-arrow-left mr-2"></i>Back to Profile</a>`;
@@ -157,13 +152,45 @@
                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')}
                 }).then(res => res.json()).then(data => {
                     if (data.status === 'success') {
-                        alert('Trip saved successfully!');
+                        // The alert has been removed from here
                         window.location.href = "{% url 'profile' %}";
-                    } else { alert(`Error: ${data.error}`); }
+                    } else { 
+                        alert(`Error: ${data.error}`); 
+                    }
                 });
             });
         }
     }
+
+    function createCard(item) {
+        const imageUrl = item.image_url || "{% static 'images/placeholder.jpg' %}";
+        const price = parseFloat(item.price || 0);
+        return `
+            <div class="col-6 col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    ${price > 0 ? `<div class="card-badge">$${price.toFixed(2)}</div>` : ''}
+                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">${item.name}</h5>
+                        <p class="card-text d-none d-md-block">${item.description}</p>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const embeddedData = document.getElementById('trip-data');
+        if (embeddedData) {
+            renderTripSummary(JSON.parse(embeddedData.textContent));
+        } else {
+            fetch('/api/trip/summary/')
+                .then(res => res.ok ? res.json() : Promise.reject(new Error('Please log in and start a trip to see your summary.')))
+                .then(renderTripSummary)
+                .catch(err => {
+                    document.getElementById('summary-container').innerHTML = `<div class="alert alert-warning text-center">${err.message}</div>`;
+                });
+        }
+    });
 
     function getCookie(name) {
         let cookieValue = null;

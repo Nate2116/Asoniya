@@ -57,6 +57,12 @@
         top: 90px;
         z-index: 100;
     }
+    @media (max-width: 991px) {
+        .gallery-sticky-top {
+            position: static;
+            margin-bottom: 2rem;
+        }
+    }
 </style>
 
 <div class="container py-5">
@@ -72,32 +78,8 @@
 
                 <h1 class="display-4">{{ agency.name }}</h1>
                 <p class="lead text-muted mb-4">{{ agency.description }}</p>
-
-                <hr class="my-4">
-
-                <h3 class="mb-4">Available Tour Packages</h3>
-                <div class="row">
-                    {% for tour in agency.tours.all %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card tour-card h-100">
-                            <img src="{{ tour.image.url }}" class="card-img-top" alt="{{ tour.name }}">
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">{{ tour.name }}</h5>
-                                <p class="card-text text-muted small flex-grow-1">{{ tour.description }}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="h5 text-primary mb-0"><strong>${{ tour.price }}</strong></span>
-                                    <span class="text-muted"><i class="far fa-clock mr-1"></i>{{ tour.duration_days }} Days</span>
-                                    <button class="btn btn-sm btn-primary rounded-pill" onclick="addToTrip('{{ tour.id }}', 'tour_package')">Select</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="col-12"><p>No tour packages listed for this agency yet.</p></div>
-                    {% endfor %}
-                </div>
             </div>
-
+            
             <div class="col-lg-5">
                 <div class="sticky-top gallery-sticky-top">
                     <img src="{{ agency.image.url }}" class="gallery-main" id="main-image" alt="{{ agency.name }}">
@@ -108,15 +90,70 @@
                         {% endfor %}
                     </div>
                     <div class="d-grid gap-2 mt-4">
-                        <button class="btn btn-primary btn-lg w-100" onclick="addToTrip('{{ agency.id }}', 'travel_agency')">
+                        <button class="btn btn-primary btn-lg w-100" onclick="addToTrip('{{ agency.id }}', 'travel_agency', this)">
                             <i class="fas fa-plus mr-2"></i>Add Agency to Trip
                         </button>
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-7">
+                <hr class="my-4">
+
+                <h3 class="mb-4">Available Tour Packages</h3>
+                <div class="row">
+                    {% for tour in agency.tours.all %}
+                    <div class="col-6 col-md-6 mb-4">
+                        <div class="card tour-card h-100">
+                            <img src="{{ tour.image.url }}" class="card-img-top" alt="{{ tour.name }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ tour.name }}</h5>
+                                <p class="card-text flex-grow-1 text-muted d-none d-md-block">{{ tour.description }}</p>
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3">
+                                    <div>
+                                        <span class="h5 text-primary mb-0 mr-3"><strong>${{ tour.price }}</strong></span>
+                                        <span class="text-muted d-block d-md-inline"><i class="far fa-clock mr-1"></i>{{ tour.duration_days }} Days</span>
+                                    </div>
+                                    <div class="mt-2 mt-md-0">
+                                        <button class="btn btn-sm btn-primary rounded-pill" onclick="addToTrip('{{ tour.id }}', 'tour_package', this)">Select</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12"><p>No tour packages listed for this agency yet.</p></div>
+                    {% endfor %}
+                </div>
         </div>
     </div>
 </div>
+
+<section class="navigation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <h6>Trip Planning Progress</h6>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="progress-step">Step 3 of 4: Travel Agencies</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-right navigation-buttons">
+                <a href="{% url 'accommodation' %}" class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-arrow-left mr-1"></i>Back
+                </a>
+                <a href="{% url 'car_rentals' %}" class="btn btn-primary">
+                    Next <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
 <script>
     function changeImage(imageUrl, element) {
@@ -125,7 +162,7 @@
         element.classList.add('active');
     }
 
-    function addToTrip(itemId, itemType) {
+    function addToTrip(itemId, itemType, buttonElement) {
         fetch('/api/trip/add/', {
             method: 'POST',
             headers: {
@@ -136,10 +173,13 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Silent success/failure; optionally add subtle UI feedback later
+            if (data.status === 'success') {
+                // This is the change: Toggle the class directly on the button
+                buttonElement.classList.toggle('selected');
+            }
         }).catch(() => {});
     }
-
+    
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {

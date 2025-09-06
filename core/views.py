@@ -2,12 +2,13 @@
 
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from .models import Destination, Attraction, AttractionImage, Accommodation, CarRental, Car, CarRentalImage, TravelAgency, TourPackage, TravelAgencyImage, Trip
+from .models import CarouselImage, Destination, Attraction, AttractionImage, Accommodation, CarRental, Car, CarRentalImage, TravelAgency, TourPackage, TravelAgencyImage, Trip
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.core.serializers.json import DjangoJSONEncoder
 import json
 
 # ===============================================
@@ -15,7 +16,12 @@ import json
 # ===============================================
 
 def index_page(request):
-    return render(request, 'index.html')
+    carousel_images = CarouselImage.objects.all()
+    context = {
+        'carousel_images': carousel_images
+    }
+    return render(request, 'index.html', context)
+
 
 def destinations_page(request):
     context = {'destinations': Destination.objects.all()}
@@ -65,34 +71,55 @@ def profile_page(request):
 def trip_summary_page(request):
     return render(request, 'trip-summary.html')
 
+@login_required
 def view_saved_trip_page(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id, user=request.user)
     
-    duration = None
+    
+    # --- Add duration calculation ---
+    duration_days = None
     if trip.start_date and trip.end_date:
         delta = trip.end_date - trip.start_date
-        duration = delta.days + 1
+        duration_days = delta.days + 1
 
-    # --- THIS IS THE FIX ---
-    # The total cost should be calculated from the prices of individual cars,
-    # not from the CarRental company model.
+    destinations_data = []
+    all_destinations = set()
+    for item in list(trip.attractions.all()) + list(trip.accommodations.all()):
+        all_destinations.add(item.destination)
+
+    for dest in all_destinations:
+        dest_attractions = trip.attractions.filter(destination=dest)
+        dest_accommodations = trip.accommodations.filter(destination=dest)
+        destinations_data.append({
+            'name': dest.name,
+            'attractions': [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else ''} for attr in dest_attractions],
+            'accommodations': [{'name': acc.name, 'description': acc.description, 'price': acc.price_per_night, 'image_url': acc.image.url if acc.image else ''} for acc in dest_accommodations]
+        })
+    
     total_cost = 0
     for item in trip.accommodations.all():
         total_cost += item.price_per_night
-    # Sum the price of each selected car
     for item in trip.cars.all():
-        if item.price_per_day:
-            total_cost += item.price_per_day
+        total_cost += item.price_per_day
+    for item in trip.tour_packages.all():
+        total_cost += item.price
+
+    trip_data = {
+        'trip_name': trip.name,
+        'is_saved_trip': True,
+        'duration_days': duration_days,
+        'destinations': destinations_data,
+        'cars': [{'name': car.name, 'description': car.description, 'price': car.price_per_day, 'image_url': car.image.url if car.image else ''} for car in trip.cars.all()],
+        'car_rentals': [{'name': cr.name, 'description': cr.description, 'image_url': cr.image.url if cr.image else ''} for cr in trip.car_rentals.all()],
+        'travel_agencies': [{'name': agency.name, 'description': agency.description, 'image_url': agency.image.url if agency.image else ''} for agency in trip.travel_agencies.all()],
+        'tour_packages': [{'name': tour.name, 'description': tour.description, 'price': tour.price, 'image_url': tour.image.url if tour.image else ''} for tour in trip.tour_packages.all()],
+        'total_cost': total_cost,
+    }
 
     context = {
-        'trip': trip,
-        'duration_days': duration,
-        'attractions': list(trip.attractions.all()),
-        'accommodations': list(trip.accommodations.all()),
-        'car_rentals': list(trip.car_rentals.all()),
-        'cars': list(trip.cars.all()),
-        'travel_agencies': list(trip.travel_agencies.all()),
-        'total_cost': total_cost,
+        'trip_json': json.dumps(trip_data, cls=DjangoJSONEncoder),
+        'start_date': trip.start_date,
+        'end_date': trip.end_date,
     }
     return render(request, 'trip-summary.html', context)
 
@@ -231,24 +258,49 @@ def add_to_trip_api(request):
 @login_required
 def get_trip_summary_api(request):
     trip = Trip.objects.filter(user=request.user, status='active').first()
+
+    duration_days = None
+    if trip.start_date and trip.end_date:
+        delta = trip.end_date - trip.start_date
+        duration_days = delta.days + 1
+
     if not trip:
         return JsonResponse({'error': 'No active trip found.'}, status=404)
 
-    # --- THIS IS THE FIX ---
-    # We serialize the selected cars, not the rental companies for the price.
-    accommodations = [{'name': acc.name, 'description': acc.description, 'price': acc.price_per_night, 'image_url': acc.image.url if acc.image else ''} for acc in trip.accommodations.all()]
+    # --- New Organized Structure ---
+    destinations_data = []
+    # Get all unique destinations from the selected attractions and accommodations
+    all_destinations = set()
+    for item in list(trip.attractions.all()) + list(trip.accommodations.all()):
+        all_destinations.add(item.destination)
+
+    for dest in all_destinations:
+        dest_attractions = trip.attractions.filter(destination=dest)
+        dest_accommodations = trip.accommodations.filter(destination=dest)
+        destinations_data.append({
+            'name': dest.name,
+            'attractions': [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else ''} for attr in dest_attractions],
+            'accommodations': [{'name': acc.name, 'description': acc.description, 'price': acc.price_per_night, 'image_url': acc.image.url if acc.image else ''} for acc in dest_accommodations]
+        })
+
     selected_cars = [{'name': car.name, 'description': car.description, 'price': car.price_per_day, 'image_url': car.image.url if car.image else ''} for car in trip.cars.all()]
+    tour_packages = [{'name': tour.name, 'description': tour.description, 'price': tour.price, 'image_url': tour.image.url if tour.image else ''} for tour in trip.tour_packages.all()]
     
-    # The cost is calculated from accommodations and selected cars.
-    total_cost = sum(a['price'] for a in accommodations) + sum(c['price'] for c in selected_cars if c['price'])
+    # Calculate total cost from all priced items
+    total_cost = sum(acc['price'] for dest in destinations_data for acc in dest['accommodations']) \
+               + sum(c['price'] for c in selected_cars if c['price']) \
+               + sum(t['price'] for t in tour_packages if t['price'])
 
     data = {
         'trip_name': trip.name,
-        'attractions': [{'name': attr.name, 'description': attr.description, 'image_url': attr.image.url if attr.image else ''} for attr in trip.attractions.all()],
-        'accommodations': accommodations,
-        'cars': selected_cars, # Send the detailed car list
-        'car_rentals': [{'name': cr.name} for cr in trip.car_rentals.all()], # Still useful to know the company
-        'travel_agencies': [{'name': agency.name} for agency in trip.travel_agencies.all()],
+        'start_date': trip.start_date.strftime('%b %d, %Y') if trip.start_date else None,
+        'end_date': trip.end_date.strftime('%b %d, %Y') if trip.end_date else None,
+        'duration_days': duration_days,
+        'destinations': destinations_data,
+        'cars': selected_cars,
+        'car_rentals': [{'name': cr.name, 'description': cr.description, 'image_url': cr.image.url if cr.image else ''} for cr in trip.car_rentals.all()],
+        'travel_agencies': [{'name': agency.name, 'description': agency.description, 'image_url': agency.image.url if agency.image else ''} for agency in trip.travel_agencies.all()],
+        'tour_packages': tour_packages,
         'total_cost': total_cost
     }
     return JsonResponse(data)
@@ -256,18 +308,21 @@ def get_trip_summary_api(request):
 @login_required
 def save_trip_api(request):
     if request.method == 'POST':
-        try:
-            active_trip = Trip.objects.get(user=request.user, status='active')
-            first_destination = active_trip.destinations.first()
-            if first_destination:
-                active_trip.name = f"Trip to {first_destination.name}"
-            else:
-                active_trip.name = "My Saved Ethiopian Trip"
-            active_trip.status = 'saved'
-            active_trip.save()
-            return JsonResponse({'status': 'success', 'message': 'Trip has been saved to your profile.'})
-        except Trip.DoesNotExist:
-            return JsonResponse({'error': 'No active trip to save.'}, status=404)
+        trip = get_object_or_404(Trip, user=request.user, status='active')
+        
+        # New Naming Logic
+        trip_name = "My Ethiopian Adventure"
+        attraction = trip.attractions.first()
+        if attraction:
+            trip_name = f"Trip to {attraction.name}"
+        
+        if trip.start_date:
+            trip_name += f" on {trip.start_date.strftime('%b %d, %Y')}"
+
+        trip.name = trip_name
+        trip.status = 'saved'
+        trip.save()
+        return JsonResponse({'status': 'success', 'message': 'Trip has been saved to your profile.'})
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @login_required
@@ -287,21 +342,19 @@ def update_trip_dates_api(request):
 def profile_api(request):
     user = request.user
     if request.method == 'GET':
-        # Fetch all trips for the user, regardless of status
-        all_user_trips = Trip.objects.filter(user=user)
+        # --- This is the fix ---
+        # Fetch all trips for the user, ordering by the most recent first.
+        all_user_trips = Trip.objects.filter(user=user).order_by('-id')
 
         # Serialize the trip data into a list
         trips_data = []
         for trip in all_user_trips:
-            # --- FIXED: Added attractions.count() to the item count ---
-            item_count = trip.destinations.count() + trip.attractions.count() + \
-                         trip.accommodations.count() + trip.car_rentals.count() + \
-                         trip.travel_agencies.count()
             trips_data.append({
                 'id': trip.id,
                 'name': trip.name,
                 'status': trip.get_status_display(),
-                'item_count': item_count,
+                'start_date': trip.start_date.strftime('%b %d, %Y') if trip.start_date else None,
+                'end_date': trip.end_date.strftime('%b %d, %Y') if trip.end_date else None,
                 'view_url': reverse('view_saved_trip', args=[trip.id])
             })
 

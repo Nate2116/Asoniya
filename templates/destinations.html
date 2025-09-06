@@ -48,34 +48,41 @@
             <p class="text-center text-muted mb-5">Select a destination to see its attractions and details.</p>
             <div class="row">
                 {% for dest in destinations %}
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div class="col-6 col-md-4 mb-4">
                     <div class="card destination-card h-100">
                         <img src="{{ dest.image.url }}" class="card-img-top" alt="{{ dest.name }}" style="height: 250px; object-fit: cover;">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ dest.name }}</h5>
-                            <p class="card-text flex-grow-1">{{ dest.description|truncatewords:25 }}</p>
-                            <a href="{% url 'destination_detail' dest.id %}" class="btn btn-primary mt-3">Explore {{ dest.name }}</a>
+                            <p class="card-text flex-grow-1 text-muted d-none d-md-block">{{ dest.description|truncatewords:25 }}</p>
+                            <a href="{% url 'destination_detail' dest.id %}" class="btn btn-primary mt-3">Explore Destination</a>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
+        </div>
+    </section>
+
+    <section class="navigation-section">
+        <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <div class="progress-info">
-                        <h6 class="mb-1">Trip Planning Progress</h6>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-container">
+                        <div class="progress-info">
+                            <h6>Trip Planning Progress</h6>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="progress-step">Step 1 of 4: Destinations</div>
                         </div>
-                        <small class="text-muted">Step 1 of 4: Destinations</small>
                     </div>
                 </div>
-                <div class="col-md-6 text-right">
+                <div class="col-md-6 text-right navigation-buttons">
                     <a href="{% url 'index' %}" class="btn btn-outline-secondary mr-2">
-                        <i class="fas fa-arrow-left mr-1"></i>Back: Home
+                        <i class="fas fa-arrow-left mr-1"></i>Home
                     </a>
-                    <a href="{% url 'accommodation' %}" class="btn btn-primary">
-                        Next: Accommodations <i class="fas fa-arrow-right ml-1"></i>
+                    <a href="{% url 'accommodation' %}" class="btn btn-primary" id="next-button">
+                        Next <i class="fas fa-arrow-right ml-1"></i>
                     </a>
                 </div>
             </div>
@@ -101,9 +108,18 @@
                         const startDate = selectedDates[0].toISOString().split('T')[0];
                         const endDate = selectedDates[1].toISOString().split('T')[0];
                         
+                         localStorage.setItem('tripDuration', JSON.stringify({start: startDate, end: endDate}));
                         // You can still save the dates to the user's active trip
                         updateTripDates(startDate, endDate);
                     }
+                }
+            });
+            // Next button click handler
+            document.getElementById('next-button').addEventListener('click', function(event) {
+                const durationInput = document.getElementById('visit-duration').value;
+                if (!durationInput) {
+                    event.preventDefault(); // Stop navigation
+                    alert('Please select your visit duration before proceeding.');
                 }
             });
         });

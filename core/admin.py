@@ -1,9 +1,13 @@
 from django.contrib import admin
 from .models import (
-    Destination, Attraction, AttractionImage, Accommodation, 
+    CarouselImage, Destination, Attraction, AttractionImage, Accommodation, 
     CarRental, Car, CarRentalImage, 
     TravelAgency, TourPackage, TravelAgencyImage, Trip
 )
+
+# --- Admin for Carousel Images (New) ---
+class CarouselImageAdmin(admin.ModelAdmin):
+    list_display = ('title', 'caption')
 
 # --- Inlines for Destinations (New) ---
 
@@ -49,6 +53,7 @@ class CarRentalAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 
 # Register your models here to make them visible in the admin panel
+admin.site.register(CarouselImage, CarouselImageAdmin)
 admin.site.register(Destination, DestinationAdmin)
 admin.site.register(Attraction, AttractionAdmin)
 admin.site.register(Accommodation)
