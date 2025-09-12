@@ -15,6 +15,19 @@
         margin-bottom: 1.5rem;
     }
 
+    /* --- New Styling for Trip Duration --- */
+    .trip-duration-badge {
+        display: inline-block;
+        background-color: #fff8e1;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 3rem;
+    }
+
     /* Responsive Adjustments */
     @media (max-width: 767.98px) {
         .display-4 {
@@ -32,13 +45,25 @@
         .card-img-top {
             height: 150px !important;
         }
+        /* --- Responsive style for duration badge --- */
+        .trip-duration-badge {
+            font-size: 0.95rem;
+            padding: 0.4rem 0.8rem;
+            margin-bottom: 2.5rem;
+        }
     }
 </style>
 
 <section class="trip-summary py-5">
-    <div class="container">
-        <h2 id="trip-title" class="text-center mb-2 display-4">Your Trip Summary</h2>
-        <p id="trip-duration" class="text-center text-muted h5 mb-5"></p> 
+    <div class="container text-center">
+        <h2 id="trip-title" class="mb-3 display-4">Your Trip Summary</h2>
+        
+        <p id="trip-duration" class="trip-duration-badge">
+            {% if start_date and end_date %}
+                <i class="fas fa-calendar-alt mr-2"></i>{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}
+            {% endif %}
+        </p> 
+        
         <div id="summary-container"><p class="text-center">Loading your trip details...</p></div>
         <div id="action-buttons-container" class="action-buttons text-center mt-4"></div>
     </div>
@@ -52,10 +77,8 @@
 
 <script>
     function renderTripSummary(data) {
-            // --- Trip duration ---
         const durationEl = document.getElementById('trip-duration');
-        // This part now primarily serves NEW trips, but also works as a fallback.
-        if (durationEl.innerHTML === '' && data.start_date && data.end_date) {
+        if (durationEl.innerHTML.trim() === '' && data.start_date && data.end_date) {
             durationEl.innerHTML = `<i class="fas fa-calendar-alt mr-2"></i> ${data.start_date} - ${data.end_date} (${data.duration_days} days)`;
         }
 
@@ -65,10 +88,9 @@
 
         let html = '';
 
-        // --- Destinations, Attractions, and Accommodations ---
         if (data.destinations && data.destinations.length > 0) {
             data.destinations.forEach(dest => {
-                html += `<div class="destination-group">`;
+                html += `<div class="destination-group text-left">`; // Added text-left
                 html += `<h3 class="destination-group-title"><i class="fas fa-map-marker-alt text-primary mr-2"></i>${dest.name}</h3>`;
                 
                 let contentRendered = false;
@@ -97,8 +119,9 @@
             });
         }
         
-        // --- Other Services ---
         const services = {
+            'Selected Accommodations': { items: data.accommodations, icon: 'fa-hotel' },
+            'Selected Rooms': { items: data.rooms, icon: 'fa-bed' },
             'Car Rental Companies': { items: data.car_rentals, icon: 'fa-building' },
             'Selected Vehicles': { items: data.cars, icon: 'fa-car' },
             'Travel Agencies': { items: data.travel_agencies, icon: 'fa-handshake' },
@@ -108,7 +131,7 @@
         for (const title in services) {
             const service = services[title];
             if (service.items && service.items.length > 0) {
-                html += `<h3 class="section-title"><i class="fas ${service.icon} mr-2"></i>${title}</h3><div class="row">`;
+                html += `<div class="text-left"><h3 class="section-title"><i class="fas ${service.icon} mr-2"></i>${title}</h3></div><div class="row">`;
                 service.items.forEach(item => {
                     html += createCard(item);
                 });
@@ -116,11 +139,10 @@
             }
         }
         
-        // --- Render Cost Breakdown ---
         const totalCost = parseFloat(data.total_cost) || 0;
         html += `
             <div class="summary-section mb-4">
-                <h3 class="section-title"><i class="fas fa-calculator mr-2"></i>Trip Cost</h3>
+                 <div class="text-left"><h3 class="section-title"><i class="fas fa-calculator mr-2"></i>Trip Cost</h3></div>
                 <div class="row justify-content-center">
                     <div class="col-lg-6">
                         <div class="card trip-total-card">
@@ -135,7 +157,6 @@
             </div>`;
         container.innerHTML = html;
 
-        // --- Action Buttons ---
         const actionsContainer = document.getElementById('action-buttons-container');
         if (data.is_saved_trip) {
             actionsContainer.innerHTML = `<a href="{% url 'profile' %}" class="btn btn-secondary btn-lg"><i class="fas fa-arrow-left mr-2"></i>Back to Profile</a>`;
@@ -152,7 +173,6 @@
                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')}
                 }).then(res => res.json()).then(data => {
                     if (data.status === 'success') {
-                        // The alert has been removed from here
                         window.location.href = "{% url 'profile' %}";
                     } else { 
                         alert(`Error: ${data.error}`); 
@@ -167,7 +187,7 @@
         const price = parseFloat(item.price || 0);
         return `
             <div class="col-6 col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 text-left">
                     ${price > 0 ? `<div class="card-badge">$${price.toFixed(2)}</div>` : ''}
                     <img src="${imageUrl}" class="card-img-top" alt="${item.name}" style="height: 200px; object-fit: cover;">
                     <div class="card-body">

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Hero Header */
+    .accommodation-hero {
+        height: 60vh;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    .accommodation-header {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 50px;
+        color: white;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent);
+    }
+    .accommodation-header .breadcrumb-item::before { color: #fff; }
+    .accommodation-header .breadcrumb-item a { color: #ffc107; text-decoration: none; }
+    .accommodation-header .breadcrumb-item.active { color: #fff; }
+
+    /* Main Content */
+    .accommodation-detail-section { padding: 4rem 0; background-color: #f8f9ff; }
+    .detail-container { max-width: 1200px; margin: auto; }
+    .main-content { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 2.5rem; }
+    
+    .detail-header .detail-type { color: #ffc107; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .detail-header .detail-title { font-size: 3rem; font-weight: 700; color: #333; margin-bottom: 1rem; }
+    .detail-header .detail-description { color: #666; line-height: 1.8; font-size: 1.1rem; }
+
+    /* Gallery */
+    .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 200px); gap: 1rem; position: relative; }
+    .gallery-item { overflow: hidden; border-radius: 15px; cursor: pointer; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease, filter 0.3s; }
+    .gallery-item:hover img { transform: scale(1.05); filter: brightness(0.8); }
+    .gallery-item:nth-child(1) { grid-column: 1 / 3; grid-row: 1 / 3; }
+    .show-all-photos-btn { position: absolute; bottom: 1rem; right: 1rem; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; }
+
+    /* Modal for Gallery */
+    .modal-gallery { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.9); }
+    .modal-gallery-content { margin: auto; padding: 20px; max-width: 90%; }
+    .modal-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+    .close-gallery { position: absolute; top: 20px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
+
+    /* Section Titles */
+    .section-heading { color: #333; font-size: 2rem; font-weight: 600; margin: 2.5rem 0 1.5rem 0; border-bottom: 3px solid #ffc107; padding-bottom: 0.5rem; display: inline-block; }
+
+    /* Services & Amenities */
+    .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    .service-item { background: #f8f9ff; padding: 1rem; border-radius: 10px; border-left: 4px solid #ffc107; }
+
+    /* Room Cards */
+    .room-card { border: 1px solid #e9ecef; border-radius: 12px; transition: all 0.3s ease; }
+    .room-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    .room-card img { height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .btn.selected { background-color: #28a745 !important; border-color: #28a745 !important; color: white !important; }
+
+    /* --- RESPONSIVE STYLES --- */
+    @media (max-width: 991px) {
+        .accommodation-header h1, .detail-header .detail-title { font-size: 2.5rem; }
+        .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 200px); }
+        .gallery-item:nth-child(1) { grid-column: 1 / 3; grid-row: 1 / 2; }
+        .gallery-item:nth-child(2) { grid-column: 1 / 2; grid-row: 2 / 3; }
+        .gallery-item:nth-child(3) { grid-column: 2 / 3; grid-row: 2 / 3; }
+        .gallery-item:nth-child(4) { grid-column: 1 / 3; grid-row: 3 / 4; }
+    }
+    @media (max-width: 767px) {
+        .main-content { padding: 1.5rem; }
+        .section-heading { font-size: 1.5rem; }
+    }
+    @media (max-width: 576px) {
+        .accommodation-hero { height: 50vh; }
+        .accommodation-header h1, .detail-header .detail-title { font-size: 2rem; }
+        .gallery-grid { grid-template-columns: 1fr; grid-template-rows: repeat(4, 200px); }
+        .gallery-item:nth-child(n) { grid-column: auto; grid-row: auto; }
+        .show-all-photos-btn { position: relative; display: block; width: 100%; margin-top: 1rem; background-color: #333; }
+    }
+</style>
+
+<section class="accommodation-hero" style="background-image: url('{{ accommodation.image.url }}');">
+    <div class="accommodation-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'accommodation' %}">Accommodation</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ accommodation.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="display-2 font-weight-bold">{{ accommodation.name }}</h1>
+        </div>
+    </div>
+</section>
+
+<div class="accommodation-detail-section">
+    <div class="container detail-container">
+        <div class="main-content">
+            <div class="detail-header">
+                <p class="detail-description">{{ accommodation.description }}</p>
+            </div>
+
+            <h2 class="section-heading">Gallery</h2>
+            <div class="gallery-grid">
+                {% for image in gallery_images|slice:":4" %}
+                    <div class="gallery-item" onclick="openGalleryModal()">
+                        <img src="{{ image.image.url }}" alt="{{ image.caption|default:accommodation.name }}">
+                    </div>
+                {% empty %}
+                    <p>No gallery images available.</p>
+                {% endfor %}
+                {% if gallery_images|length > 4 %}
+                    <div class="gallery-item show-all-overlay" onclick="openGalleryModal()">
+                        <img src="{{ gallery_images.3.image.url }}" alt="More photos">
+                        <button class="btn show-all-photos-btn">
+                            <i class="fas fa-th mr-2"></i>Show all photos
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <h2 class="section-heading">Rooms & Suites</h2>
+            <div class="row">
+                {% for room in room_types %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card room-card h-100">
+                        <img src="{{ room.image.url }}" class="card-img-top" alt="{{ room.name }}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ room.name }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">{{ room.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 text-primary mb-0"><strong>${{ room.price_per_night }}</strong>/night</span>
+                                <button class="btn btn-sm btn-primary rounded-pill" onclick="addToTrip('{{ room.id }}', 'room', this)">Select</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12"><p>No specific room types listed.</p></div>
+                {% endfor %}
+            </div>
+
+            <h2 class="section-heading">Our Services</h2>
+            <div class="service-grid">
+                {% for service in services_list %}
+                    <div class="service-item">{{ service }}</div>
+                {% endfor %}
+            </div>
+
+            <h2 class="section-heading">Amenities</h2>
+            <div class="service-grid">
+                {% for amenity in amenities_list %}
+                    <div class="service-item">{{ amenity }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center my-4 pt-4 border-top">
+                <button class="btn btn-primary btn-lg" onclick="addToTrip('{{ accommodation.id }}', 'accommodation', this)">
+                    <i class="fas fa-plus mr-2"></i>Add Accommodation to Trip
+                </button>
+            </div>
+
+             <h2 class="section-heading">Location</h2>
+            <p class="detail-description">{{ accommodation.location_description }}</p>
+        </div>
+    </div>
+</div>
+
+<div id="gallery-modal" class="modal-gallery">
+    <span class="close-gallery" onclick="closeGalleryModal()">&times;</span>
+    <div class="modal-gallery-content">
+        <div class="modal-gallery-grid">
+            {% for image in gallery_images %}
+                <img src="{{ image.image.url }}" alt="{{ image.caption|default:accommodation.name }}" style="width:100%; border-radius:10px;">
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<section class="navigation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <h6>Trip Planning Progress</h6>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="progress-step">Step 2 of 4: Accommodation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-right navigation-buttons">
+                <a href="{% url 'accommodation' %}" class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-arrow-left mr-1"></i>Back
+                </a>
+                <a href="{% url 'travel_agencies' %}" class="btn btn-primary">
+                    Next <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // --- Gallery Modal ---
+    function openGalleryModal() { document.getElementById('gallery-modal').style.display = "block"; }
+    function closeGalleryModal() { document.getElementById('gallery-modal').style.display = "none"; }
+
+    // --- Add to Trip ---
+    function addToTrip(itemId, itemType, buttonElement) {
+        fetch('/api/trip/add/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ item_id: itemId, item_type: itemType })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                buttonElement.classList.toggle('selected');
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

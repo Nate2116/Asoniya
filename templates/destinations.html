@@ -126,7 +126,7 @@
 
         function updateTripDates(startDate, endDate) {
             const csrftoken = getCookie('csrftoken');
-            fetch('/api/trip/dates/update/', {
+            fetch('/api/trip/dates/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

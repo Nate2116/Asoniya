@@ -1,215 +1,283 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accommodation - Asoniya</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/header.css' %}">
-    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body>
-    {% include 'components/header.html' %}
 
-    <section class="page-header bg-light py-5">
-        <div class="container">
-            <div class="text-center">
-                <h1 class="display-4 mb-3">Accommodation</h1>
-                <p class="lead">Find the perfect place to stay during your Ethiopian adventure</p>
-            </div>
-        </div>
-    </section>
+{% block content %}
+<style>
+    /* --- New Accommodation Card Styling --- */
+    .accommodation-section {
+        background-color: #f8f9ff;
+    }
 
-    <section class="filters py-4 bg-white border-bottom">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-10">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <select class="form-control" id="filter-destination">
-                                <option value="">All Destinations</option>
-                                {% for dest in destinations %}
-                                    <option value="{{ dest.id }}">{{ dest.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-control" id="filter-type">
-                                <option value="">All Types</option>
-                                <option value="Hotel">Hotel</option>
-                                <option value="Resort">Resort</option>
-                                <option value="Lodge">Lodge</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-control" id="filter-price">
-                                <option value="">Price Range</option>
-                                <option value="50">Under $50</option>
-                                <option value="100">$50 - $100</option>
-                                <option value="200">$100 - $200</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-control" id="filter-rating">
-                                <option value="">Min Rating</option>
-                                <option value="5">5 Stars</option>
-                                <option value="4">4+ Stars</option>
-                                <option value="3">3+ Stars</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 text-right">
-                    <button class="btn btn-primary" id="apply-filters-btn">
-                        <i class="fas fa-filter mr-2"></i>Apply
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
+    .accommodation-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+         display: flex; /* Added for flex layout */
+        flex-direction: column; /* Ensures vertical layout */
+        height: 100%; /* Ensures cards in a row are the same height */
+    }
 
-    <section class="accommodations py-5">
-        <div class="container">
-            <div class="row" id="accommodation-list">
-                </div>
-        </div>
-    </section>
+    .accommodation-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
 
-   <section class="navigation-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="progress-container">
-                        <div class="progress-info">
-                            <h6>Trip Planning Progress</h6>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div class="progress-step">Step 2 of 4: Accommodation</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 text-right navigation-buttons">
-                    <a href="{% url 'destinations' %}" class="btn btn-outline-secondary mr-2">
-                        <i class="fas fa-arrow-left mr-1"></i>Back
-                    </a>
-                    <a href="{% url 'travel_agencies' %}" class="btn btn-primary">
-                        Next <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-    {% include 'components/footer.html' %}
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    .card-image-top {
+        height: 250px;
+        background-size: cover;
+        background-position: center;
+    }
     
-    <script>
-        // Helper function to get the CSRF token needed for secure POST requests
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    .card-content {
+        padding: 1.5rem;
+        flex-grow: 1; /* Allows this section to grow */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Pushes footer to the bottom */
+    }
+
+    .card-type {
+        color: #ffc107; /* Matches project's primary color */
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #333;
+    }
+
+    .card-description {
+        color: #666;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+        min-height: 70px; /* Ensures consistent card height */
+    }
+
+    .services-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        min-height: 50px; /* Ensures consistent card height */
+    }
+
+    .service-tag {
+        background: #fff8e1; /* Lighter shade of the primary color */
+        color: #856404;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .card-footer-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #eee;
+        padding-top: 1rem;
+        margin-top: auto; /* Pushes footer to the bottom */
+    }
+
+    .view-details-btn {
+        background: #ffc107; /* Matches project's primary color */
+        color: #333;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .view-details-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+    }
+    
+    /* --- New Filter Styling --- */
+    .filters-section {
+        background-color: #ffffff;
+        padding: 2rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        align-items: center;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .filter-group label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    .filter-group .form-control, .filter-group .btn {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<section class="page-header bg-light py-5">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-4 mb-3">Accommodation</h1>
+            <p class="lead">Find the perfect place to stay during your Ethiopian adventure</p>
+        </div>
+    </div>
+</section>
+
+<section class="filters-section">
+    <div class="container">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="filter-destination"><i class="fas fa-map-marker-alt mr-1"></i> Destination</label>
+                <select class="form-control" id="filter-destination">
+                    <option value="">All Destinations</option>
+                    {% for dest in destinations %}
+                        <option value="{{ dest.id }}">{{ dest.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-type"><i class="fas fa-building mr-1"></i> Accommodation Type</label>
+                <select class="form-control" id="filter-type">
+                    <option value="">All Types</option>
+                    <option value="Hotel">Hotel</option>
+                    <option value="Resort">Resort</option>
+                    <option value="Lodge">Lodge</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-primary w-100" id="apply-filters-btn">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="accommodations-section py-5">
+    <div class="container">
+        <div class="row" id="accommodation-list">
+            </div>
+    </div>
+</section>
+
+<section class="navigation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <h6>Trip Planning Progress</h6>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="progress-step">Step 2 of 4: Accommodation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-right navigation-buttons">
+                <a href="{% url 'destinations' %}" class="btn btn-outline-secondary mr-2">
+                    <i class="fas fa-arrow-left mr-1"></i>Back
+                </a>
+                <a href="{% url 'travel_agencies' %}" class="btn btn-primary">
+                    Next <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-        const csrftoken = getCookie('csrftoken');
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-        // Universal function to handle adding an item to the user's trip
-        function selectItem(itemId, itemType, element) {
-            fetch('/api/trip/add/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({
-                    item_id: itemId,
-                    item_type: itemType
-                })
-            })
+    function fetchAndRenderAccommodations(url = '/api/accommodations/') {
+        fetch(url)
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    // Toggle a 'selected' class on the card for visual feedback
-                    element.classList.toggle('selected');
-                } else {
-                    // Silent failure; optionally add subtle UI feedback later
+                const list = document.getElementById('accommodation-list');
+                list.innerHTML = ''; 
+
+                if (data.length === 0) {
+                    list.innerHTML = '<div class="col-12 text-center"><p>No accommodations found matching your criteria.</p></div>';
+                    return;
                 }
-            }).catch(() => {});
-        }
 
-        // This function fetches accommodation data from our API and renders the cards
-        function fetchAndRenderAccommodations(url = '/api/accommodations/') {
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const list = document.getElementById('accommodation-list');
-                    list.innerHTML = ''; // Clear previous results
+                data.forEach(acc => {
+                    const imageUrl = acc.image_url ? acc.image_url : "{% static 'images/placeholder.jpg' %}";
+                    const detailUrl = `/accommodation/${acc.id}/`;
+                    
+                    const amenitiesHtml = acc.amenities.slice(0, 4).map(amenity => `<span class="service-tag">${amenity}</span>`).join('');
 
-                    if (data.length === 0) {
-                        list.innerHTML = '<div class="col-12 text-center"><p>No accommodations found matching your criteria.</p></div>';
-                        return;
-                    }
-
-                    data.forEach(acc => {
-                        const imageUrl = acc.image_url ? acc.image_url : "{% static 'images/placeholder.jpg' %}";
-                        const card = `
-                            <div class="col-6 col-md-4 col-lg-3 mb-4 card-grid-col">
-                                <div class="card accommodation-card h-100 selection-card" onclick="selectItem(${acc.id}, 'accommodation', this)">
-                                    <div class="card-badge">${acc.rating}★</div>
-                                    <img src="${imageUrl}" class="card-img-top" alt="${acc.name}">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${acc.name}</h5>
-                                        <p class="card-text">${acc.description}</p>
+                     const card = `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="accommodation-card">
+                                <div class="card-image-top" style="background-image: url('${imageUrl}')"></div>
+                                <div class="card-content">
+                                    <div>
+                                        <div class="card-type">${acc.accommodation_type}</div>
+                                        <h3 class="card-title">${acc.name}</h3>
+                                        <p class="card-description">${acc.description.substring(0, 100)}...</p>
+                                        <div class="services-list">
+                                            ${amenitiesHtml}
+                                        </div>
                                     </div>
-                                    <div class="card-footer d-flex justify-content-between align-items-center">
-                                        <span class="price text-primary font-weight-bold">$${acc.price}/night</span>
+                                    <div class="card-footer-custom">
+                                        <a href="${detailUrl}" class="view-details-btn">View Details</a>
                                     </div>
                                 </div>
-                            </div>`;
-                        list.innerHTML += card;
-                    });
+                            </div>
+                        </div>`;
+                    list.innerHTML += card;
                 });
-        }
-
-        // This code runs when the page has finished loading
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load all accommodations by default when the page first loads
-            fetchAndRenderAccommodations();
-
-            // Add an event listener to the "Apply" button
-            document.getElementById('apply-filters-btn').addEventListener('click', function() {
-                // Get the current values from all filter dropdowns
-                const destination = document.getElementById('filter-destination').value;
-                const type = document.getElementById('filter-type').value;
-                const maxPrice = document.getElementById('filter-price').value;
-                const minRating = document.getElementById('filter-rating').value;
-
-                // Build a query string for the API call based on the selected filters
-                const params = new URLSearchParams();
-                if (destination) params.append('destination', destination);
-                if (type) params.append('type', type);
-                if (maxPrice) params.append('max_price', maxPrice);
-                if (minRating) params.append('min_rating', minRating);
-
-                // Fetch and render the filtered results
-                fetchAndRenderAccommodations(`/api/accommodations/?${params.toString()}`);
             });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchAndRenderAccommodations();
+
+        document.getElementById('apply-filters-btn').addEventListener('click', function() {
+            const destination = document.getElementById('filter-destination').value;
+            const type = document.getElementById('filter-type').value;
+            
+            const params = new URLSearchParams();
+            if (destination) params.append('destination', destination);
+            if (type) params.append('type', type);
+
+            fetchAndRenderAccommodations(`/api/accommodations/?${params.toString()}`);
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

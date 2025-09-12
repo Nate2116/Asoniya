@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     CarouselImage, Destination, Attraction, AttractionImage, Accommodation, 
+    AccommodationGalleryImage, RoomType,
     CarRental, Car, CarRentalImage, 
     TravelAgency, TourPackage, TravelAgencyImage, Trip
 )
@@ -22,6 +23,20 @@ class AttractionImageInline(admin.TabularInline):
 class AttractionAdmin(admin.ModelAdmin):
     inlines = [AttractionImageInline]
     list_display = ('name', 'destination')
+
+class AccommodationGalleryImageInline(admin.TabularInline):
+    model = AccommodationGalleryImage
+    extra = 3  # Show 3 empty forms for gallery images
+
+class RoomTypeInline(admin.TabularInline):
+    model = RoomType
+    extra = 1  # Show 1 empty form for a room type
+
+class AccommodationAdmin(admin.ModelAdmin):
+    inlines = [AccommodationGalleryImageInline, RoomTypeInline]
+    list_display = ('name', 'destination', 'accommodation_type')
+    list_filter = ('destination', 'accommodation_type')
+    search_fields = ('name', 'description')
 
 class TourPackageInline(admin.TabularInline):
     model = TourPackage
@@ -56,7 +71,7 @@ class CarRentalAdmin(admin.ModelAdmin):
 admin.site.register(CarouselImage, CarouselImageAdmin)
 admin.site.register(Destination, DestinationAdmin)
 admin.site.register(Attraction, AttractionAdmin)
-admin.site.register(Accommodation)
+admin.site.register(Accommodation, AccommodationAdmin)
 admin.site.register(CarRental, CarRentalAdmin)
 admin.site.register(TravelAgency, TravelAgencyAdmin)
 admin.site.register(Trip)

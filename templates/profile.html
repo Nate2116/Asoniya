@@ -62,24 +62,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Make just one API call to get all profile data
         fetch('/api/profile/')
             .then(response => {
                 if (!response.ok) {
-                    // This will trigger if the user is not logged in
                     throw new Error('Please log in to view your profile.');
                 }
                 return response.json();
             })
             .then(data => {
-                // --- Populate Personal Info ---
                 const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
                 document.getElementById('user-fullname').textContent = fullName;
                 document.getElementById('user-email').textContent = data.email;
 
-                // --- Populate Saved Trips ---
                 const tripsList = document.getElementById('saved-trips-list');
-                tripsList.innerHTML = ''; // Clear the "Loading..." message
+                tripsList.innerHTML = ''; 
 
                 if (data.saved_trips && data.saved_trips.length > 0) {
                     data.saved_trips.forEach(trip => {
@@ -88,14 +84,16 @@
                             tripDates = `<small class="text-muted">${trip.start_date} - ${trip.end_date}</small>`;
                         }
 
+                        // --- THIS IS THE FIX ---
                         const tripItemHTML = `
                             <a href="${trip.view_url}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">${trip.name}</h5>
+                                <div class="d-flex w-100 justify-content-between flex-column flex-sm-row align-items-sm-center">
+                                    <h5 class="mb-1 mb-sm-0">${trip.name}</h5>
                                     ${tripDates}
                                 </div>
-                                <p class="mb-1">Click to view this trip summary.</p>
+                                <p class="mb-1 small text-muted">Click to view this trip summary.</p>
                             </a>`;
+                        // ---------------------
                         tripsList.innerHTML += tripItemHTML;
                     });
                 } else {
@@ -103,7 +101,6 @@
                 }
             })
             .catch(error => {
-                // This block will handle errors, including the "Not logged in" case
                 const profileContainer = document.querySelector('.profile-section .container');
                 profileContainer.innerHTML = `<div class="alert alert-warning text-center">${error.message}</div>`;
             });
